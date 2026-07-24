@@ -14,7 +14,7 @@ export const CONTEST_LOCATION = "دانشگاه بیرجند · دانشکده �
 // ─── Hero Section ───────────────────────────────────────────────────────────
 export const HERO_BADGE = "ICPC Regional · University of Birjand";
 export const HERO_EYEBROW = "پنجمین دوره مسابقه";
-export const HERO_TITLE_LINE1 = "مسابقه برنامه‌نویسی";
+export const HERO_TITLE_LINE1 = "مسابقه برنامه‌نویسی الگوریتمی";
 export const HERO_TITLE_ACCENT = "دانشگاه بیرجند";
 export const HERO_SUBTITLE =
   "سه نفر، یک کامپیوتر و پنج ساعت زمان. آماده‌اید مهارت‌تان را به چالش بکشید و ببینید در رقابت با بهترین تیم‌ها چه نتیجه‌ای می‌گیرید؟";
@@ -111,19 +111,19 @@ export const ICPC_PIPELINE = [
   {
     step: "01",
     label: "BCPC",
-    sublabel: "مرحله محلی · دانشگاه بیرجند",
+    sublabel: "مرحله استانی · دانشگاه بیرجند",
     isCurrent: true,
   },
   {
     step: "02",
     label: "ICPC Regional",
-    sublabel: "مرحله منطقه‌ای · ایران",
+    sublabel: "مرحله کشوری · ایران",
     isCurrent: false,
   },
   {
     step: "03",
     label: "World Finals",
-    sublabel: "مرحله جهانی · ICPC",
+    sublabel: "مرحله بین المللی · ICPC",
     isCurrent: false,
   },
 ] as const;
@@ -314,8 +314,8 @@ export const ICPC_PIPELINE_NOTE =
 
 // ─── Contest Format Section ──────────────────────────────────────────────────
 export const FORMAT_SECTION_EYEBROW = "ساختار مسابقه";
-export const FORMAT_SECTION_TITLE_PREFIX = "با حال‌وهوای";
-export const FORMAT_SECTION_TITLE_ACCENT = "ICPC جهانی";
+export const FORMAT_SECTION_TITLE_PREFIX = "حس و حال مسابقات";
+export const FORMAT_SECTION_TITLE_ACCENT = "ICPC بین المللی";
 export const FORMAT_SECTION_SUBTITLE =
   "BCPC با الهام از فرمت مسابقات بین‌المللی ICPC برگزار می‌شود تا تجربه‌ای واقعی از یک رقابت برنامه‌نویسی تیمی را در دانشگاه بیرجند تجربه کنید.";
 
