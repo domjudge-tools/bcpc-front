@@ -15,7 +15,7 @@ export const CONTEST_LOCATION = "دانشگاه بیرجند · دانشکده �
 export const HERO_BADGE = "ICPC Regional · University of Birjand";
 export const HERO_EYEBROW = "پنجمین دوره مسابقه";
 export const HERO_TITLE_LINE1 = "مسابقه برنامه‌نویسی";
-export const HERO_TITLE_ACCENT = "بیرجند";
+export const HERO_TITLE_ACCENT = "دانشگاه بیرجند";
 export const HERO_SUBTITLE =
   "سه نفر، یک کامپیوتر و پنج ساعت زمان. آماده‌اید مهارت‌تان را به چالش بکشید و ببینید در رقابت با بهترین تیم‌ها چه نتیجه‌ای می‌گیرید؟";
 export const COUNTDOWN_LABEL = "تا شروع مسابقه";
