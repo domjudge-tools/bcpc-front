@@ -1,55 +1,64 @@
 ---
-import '../styles/global.css';
+import "../styles/global.css";
 ---
+
 <!doctype html>
-<html lang="fa" dir="rtl" class="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="generator" content={Astro.generator} />
-    <title>مسابقه برنامه‌نویسی بیرجند (BCPC)</title>
-    <link
-      href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <!-- Theme initialization script (prevents flash of wrong theme) -->
-    <script is:inline>
-      (function () {
-        try {
-          const stored = localStorage.getItem('bcpc-theme');
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          const theme = stored === 'light' || stored === 'dark' ? stored : prefersDark ? 'dark' : 'light';
-          document.documentElement.classList.remove('light', 'dark');
-          document.documentElement.classList.add(theme);
-        } catch (e) {
-          document.documentElement.classList.add('light');
+<html lang="fa" dir="rtl" class="dark">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" href="/favicon.ico" />
+        <meta name="generator" content={Astro.generator} />
+        <title>مسابقه برنامه‌نویسی بیرجند (BCPC)</title>
+        <link
+            href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+    </head>
+    <body>
+        <slot />
+    </body>
+    <script>
+        import Lenis from "lenis";
+
+        const lenis = new Lenis({
+            duration: 1.4,
+            // Expo-out easing — fast start, smooth deceleration
+            easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            orientation: "vertical",
+            smoothWheel: true,
+            wheelMultiplier: 0.9,
+            touchMultiplier: 1.5,
+        });
+
+        // Lenis uses rAF internally; expose to window so other scripts can pause it
+        (window as any).__lenis = lenis;
+
+        function raf(time: number) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
         }
-      })();
+        requestAnimationFrame(raf);
     </script>
-  </head>
-  <body>
-    <slot />
-  </body>
 </html>
 
 <style is:global>
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-  }
-  body {
-    transition:
-      background-color 0.3s ease,
-      color 0.3s ease;
-  }
-  @media (prefers-reduced-motion: reduce) {
+    html,
     body {
-      transition: none;
+        margin: 0;
+        width: 100%;
+        height: 100%;
     }
-  }
+    body {
+        transition:
+            background-color 0.3s ease,
+            color 0.3s ease;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        body {
+            transition: none;
+        }
+    }
 </style>

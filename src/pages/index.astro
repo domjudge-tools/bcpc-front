@@ -1,13 +1,49 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { Header } from '@/components/layout/Header';
-import { HeroSection } from '@/components/sections/HeroSection';
-import { HighlightsSection } from '@/components/sections/HighlightsSection';
+import Layout from "../layouts/Layout.astro";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { HeroSection } from "@/components/sections/HeroSection";
+import { StatsBar } from "@/components/sections/StatsBar";
+import { WhatIsICPCSection } from "@/components/sections/WhatIsICPCSection";
+import { ContestFormatSection } from "@/components/sections/ContestFormatSection";
+import { HighlightsSection } from "@/components/sections/HighlightsSection";
+import { TimelineSection } from "@/components/sections/TimelineSection";
+import { PrizesSection } from "@/components/sections/PrizesSection";
+import { FAQSection } from "@/components/sections/FAQSection";
+import { SponsorsSection } from "@/components/sections/SponsorsSection";
+import { CustomCursor } from "@/components/animations/CustomCursor";
 ---
+
 <Layout>
-  <Header client:load />
-  <main>
-    <HeroSection client:load />
-    <HighlightsSection client:visible />
-  </main>
+    <!-- Custom cursor: must load immediately so the OS cursor disappears on first frame -->
+    <CustomCursor client:load />
+    <Header client:load />
+
+    <main>
+        <!-- Hero: loads immediately — critical above-the-fold content -->
+        <HeroSection client:load />
+
+        <!--
+      Narrative flow for first-time visitors:
+        1. Numbers   → credibility       (StatsBar)
+        2. Context   → what is ICPC      (WhatIsICPC)
+        3. Format    → how BCPC works    (ContestFormat)
+        4. Why join  → benefits          (Highlights)
+        5. When      → the schedule      (Timeline)
+        6. Reward    → prizes at stake   (Prizes)
+        7. Answers   → common questions  (FAQ)
+        8. Trust     → who backs it      (Sponsors)
+    -->
+        <StatsBar client:visible />
+        <WhatIsICPCSection client:visible />
+        <ContestFormatSection client:visible />
+        <HighlightsSection client:visible />
+        <TimelineSection client:visible />
+        <PrizesSection client:visible />
+        <FAQSection client:visible />
+        <SponsorsSection client:visible />
+    </main>
+
+    <!-- Footer sits outside <main> — semantic landmark for screen readers -->
+    <Footer client:visible />
 </Layout>
