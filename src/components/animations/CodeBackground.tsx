@@ -24,6 +24,14 @@ interface FloatingToken {
 // don't interfere with the centered content column.
 const FLOATING_TOKENS: FloatingToken[] = [
   {
+    text: "5859-8312-1853-9392 - تجارت",
+    top: "24%",
+    left: "8%",
+    floatDuration: "27s",
+    delay: "3.5s",
+    size: "text-base",
+  },
+  {
     text: "O(n log n)",
     top: "9%",
     left: "3%",
@@ -45,6 +53,14 @@ const FLOATING_TOKENS: FloatingToken[] = [
     right: "2%",
     floatDuration: "20s",
     delay: "1.2s",
+    size: "text-xs",
+  },
+  {
+    text: "آه دولوپر گردن گیره",
+    top: "65%",
+    right: "19%",
+    floatDuration: "26s",
+    delay: "1s",
     size: "text-xs",
   },
   {
@@ -72,6 +88,14 @@ const FLOATING_TOKENS: FloatingToken[] = [
     size: "text-xs",
   },
   {
+    text: "پول دولوپر خوردن نداره",
+    top: "32%",
+    right: "23%",
+    floatDuration: "26s",
+    delay: "1s",
+    size: "text-xs",
+  },
+  {
     text: "long long MOD = 1e9+7;",
     top: "80%",
     left: "4%",
@@ -94,6 +118,14 @@ const FLOATING_TOKENS: FloatingToken[] = [
     floatDuration: "21s",
     delay: "9s",
     size: "text-xs",
+  },
+  {
+    text: "پول منو بدین",
+    top: "88%",
+    left: "16%",
+    floatDuration: "26s",
+    delay: "1s",
+    size: "text-base",
   },
   {
     text: "sort(v.begin(), v.end())",
@@ -145,7 +177,7 @@ export function CodeBackground() {
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[700px] rounded-full blur-3xl"
         style={{
           background:
-            "radial-gradient(circle, oklch(0.62 0.18 287 / 0.06) 0%, transparent 60%)",
+            "radial-gradient(circle, oklch(0.62 0.18 287 / 0.2) 0%, transparent 60%)",
         }}
       />
 
