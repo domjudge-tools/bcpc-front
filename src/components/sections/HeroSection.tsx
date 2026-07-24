@@ -58,17 +58,17 @@ export function HeroSection() {
         <div className="w-full max-w-5xl mx-auto">
           <StaggerContainer staggerDelay={0.1}>
             {/* ── Eyebrow ───────────────────────────────────────────────── */}
-            <StaggerItem>
+            {/* <StaggerItem>
               <div className="flex justify-center mb-3 md:mb-4">
                 <div className="liquid-glass-pill inline-flex items-center gap-2 text-xs font-medium text-white/60 border border-white/10">
                   <Terminal className="size-3 text-primary" />
                   <span>{HERO_EYEBROW}</span>
                 </div>
               </div>
-            </StaggerItem>
+            </StaggerItem> */}
 
             {/* ── ICPC live badge ───────────────────────────────────────── */}
-            <StaggerItem>
+            {/* <StaggerItem>
               <div className="flex justify-center mb-4 md:mb-5">
                 <div className="flex items-center gap-2.5">
                   <span className="relative flex size-2">
@@ -80,7 +80,7 @@ export function HeroSection() {
                   </span>
                 </div>
               </div>
-            </StaggerItem>
+            </StaggerItem> */}
 
             {/* ── Main title ────────────────────────────────────────────── */}
             <StaggerItem>
