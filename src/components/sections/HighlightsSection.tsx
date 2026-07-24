@@ -5,7 +5,13 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { HIGHLIGHTS } from "@/lib/constants";
+import {
+  HIGHLIGHTS,
+  HIGHLIGHTS_SECTION_EYEBROW,
+  HIGHLIGHTS_SECTION_TITLE,
+  HIGHLIGHTS_SECTION_SUBTITLE,
+  HIGHLIGHTS_SECTION_LINK,
+} from "@/lib/constants";
 import { Users, Trophy, Network, ArrowLeft } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -21,14 +27,13 @@ export function HighlightsSection() {
         <FadeIn direction="up" className="text-center mb-16">
           <div className="inline-flex items-center gap-2 liquid-glass-pill mb-4 text-xs font-medium text-primary">
             <span className="size-1.5 rounded-full bg-primary" />
-            چرا BCPC؟
+            {HIGHLIGHTS_SECTION_EYEBROW}
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            چرا در BCPC شرکت کنیم؟
+            {HIGHLIGHTS_SECTION_TITLE}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            فرصتی بی‌نظیر برای رشد مهارت‌ها، شبکه‌سازی و تجربه یک رقابت
-            هیجان‌انگیز
+            {HIGHLIGHTS_SECTION_SUBTITLE}
           </p>
         </FadeIn>
 
@@ -73,7 +78,7 @@ export function HighlightsSection() {
               href="/about"
               className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all"
             >
-              اطلاعات بیشتر درباره مسابقه
+              {HIGHLIGHTS_SECTION_LINK}
               <ArrowLeft className="size-4" />
             </a>
           </div>
