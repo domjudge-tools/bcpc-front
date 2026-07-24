@@ -14,7 +14,7 @@ export const CONTEST_LOCATION = "دانشگاه بیرجند · دانشکده �
 // ─── Hero Section ───────────────────────────────────────────────────────────
 export const HERO_BADGE = "ICPC Regional · University of Birjand";
 export const HERO_EYEBROW = "پنجمین دوره مسابقه";
-export const HERO_TITLE_LINE1 = "مسابقه برنامه‌نویسی الگوریتمی";
+export const HERO_TITLE_LINE1 = "مسابقات برنامه‌نویسی الگوریتمی";
 export const HERO_TITLE_ACCENT = "دانشگاه بیرجند";
 export const HERO_SUBTITLE =
   "سه نفر، یک کامپیوتر و پنج ساعت زمان. آماده‌اید مهارت‌تان را به چالش بکشید و ببینید در رقابت با بهترین تیم‌ها چه نتیجه‌ای می‌گیرید؟";
@@ -37,9 +37,9 @@ export const NAV_LINKS = [
 // ─── Stats ───────────────────────────────────────────────────────────────────
 export const STATS = [
   { label: "تیم شرکت‌کننده", value: 48, suffix: "+" },
-  { label: "مسئله مسابقه", value: 12, suffix: "" },
-  { label: "دانشگاه شرکت‌کننده", value: 8, suffix: "" },
-  { label: "دوره مسابقه", value: 5, suffix: "" },
+  { label: "سوال", value: 12, suffix: "" },
+  { label: "دانشگاه", value: 8, suffix: "" },
+  { label: "دوره برگزاری", value: 5, suffix: "" },
 ] as const;
 
 // ─── Highlights ─────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ export const HIGHLIGHTS = [
     icon: "Users",
   },
   {
-    title: "رقابت برای برد",
+    title: "رقابت برای پیروزی",
     description:
       "تیم‌های برتر علاوه بر کسب رتبه، جوایز نقدی و لوح تقدیر دریافت می‌کنند.",
     icon: "Trophy",
@@ -352,7 +352,7 @@ export const PRIZES_ARIA = "جوایز مسابقه";
 
 // ─── FAQ Section ─────────────────────────────────────────────────────────────
 export const FAQ_SECTION_EYEBROW = "سؤالات متداول";
-export const FAQ_SECTION_TITLE = "سؤالات شما، پاسخ‌های ما";
+export const FAQ_SECTION_TITLE = "سؤالات شما";
 export const FAQ_SECTION_SUBTITLE =
   "پاسخ سؤال‌تان را پیدا نکردید؟ از طریق صفحه تماس با ما با تیم برگزارکننده در ارتباط باشید.";
 
