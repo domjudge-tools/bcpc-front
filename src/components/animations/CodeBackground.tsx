@@ -61,7 +61,7 @@ const FLOATING_TOKENS: FloatingToken[] = [
     right: "40%",
     floatDuration: "26s",
     delay: "1s",
-    size: "text-xs",
+    size: "text-base",
   },
   {
     text: "priority_queue<int>",
@@ -93,7 +93,7 @@ const FLOATING_TOKENS: FloatingToken[] = [
     right: "23%",
     floatDuration: "26s",
     delay: "1s",
-    size: "text-xs",
+    size: "text-base",
   },
   {
     text: "long long MOD = 1e9+7;",
