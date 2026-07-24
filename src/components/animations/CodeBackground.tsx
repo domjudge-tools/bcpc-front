@@ -57,8 +57,8 @@ const FLOATING_TOKENS: FloatingToken[] = [
   },
   {
     text: "آه دولوپر گردن گیره",
-    top: "65%",
-    right: "19%",
+    top: "7%",
+    right: "40%",
     floatDuration: "26s",
     delay: "1s",
     size: "text-xs",
