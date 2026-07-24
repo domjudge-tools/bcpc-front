@@ -6,6 +6,9 @@ import { fileURLToPath } from "url";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://domjudge-tools.github.io",
+  base: "/bcpc-front",
+  output: "static",
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
