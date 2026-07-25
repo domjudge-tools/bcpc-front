@@ -40,6 +40,9 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
+.github/
+  workflows/
+    deploy.yml
 public/
   favicon.ico
   favicon.svg
@@ -102,6 +105,62 @@ tsconfig.json
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path=".github/workflows/deploy.yml">
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+</file>
 
 <file path="public/favicon.svg">
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 128 128">
@@ -844,6 +903,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+./repomix-output.xml
 </file>
 
 <file path="components.json">
@@ -943,168 +1004,6 @@ export function AnimatedCounter({
       {count}
       {suffix}
     </span>
-  );
-}
-</file>
-
-<file path="src/components/animations/CodeBackground.tsx">
-/**
- * CodeBackground — decorative hero background for BCPC.
- *
- * Renders three visual layers (all CSS-driven, no JS per frame):
- *  1. Floating monospace algorithm/code tokens at very low opacity
- *  2. Two slow-drifting gradient orbs
- *  3. A dot-grid overlay
- *
- * Positions are intentionally kept to screen edges so they never
- * compete with the centered hero content.
- */
-
-interface FloatingToken {
-  text: string;
-  top: string;
-  left?: string;
-  right?: string;
-  floatDuration: string;
-  delay: string;
-  size: "text-xs" | "text-sm" | "text-base";
-}
-
-// All tokens are kept near screen edges (left/right margins) so they
-// don't interfere with the centered content column.
-const FLOATING_TOKENS: FloatingToken[] = [
-  {
-    text: "O(n log n)",
-    top: "9%",
-    left: "3%",
-    floatDuration: "22s",
-    delay: "0s",
-    size: "text-xs",
-  },
-  {
-    text: "while (true) {",
-    top: "18%",
-    right: "4%",
-    floatDuration: "27s",
-    delay: "3.5s",
-    size: "text-sm",
-  },
-  {
-    text: "dp[i][j] = min(...)",
-    top: "30%",
-    right: "2%",
-    floatDuration: "20s",
-    delay: "1.2s",
-    size: "text-xs",
-  },
-  {
-    text: "priority_queue<int>",
-    top: "44%",
-    right: "5%",
-    floatDuration: "25s",
-    delay: "6s",
-    size: "text-xs",
-  },
-  {
-    text: "#include <bits/stdc++.h>",
-    top: "58%",
-    left: "2%",
-    floatDuration: "30s",
-    delay: "2s",
-    size: "text-xs",
-  },
-  {
-    text: "dijkstra(src, adj)",
-    top: "70%",
-    right: "3%",
-    floatDuration: "23s",
-    delay: "4.5s",
-    size: "text-xs",
-  },
-  {
-    text: "long long MOD = 1e9+7;",
-    top: "80%",
-    left: "4%",
-    floatDuration: "19s",
-    delay: "7s",
-    size: "text-xs",
-  },
-  {
-    text: "Floyd-Warshall",
-    top: "88%",
-    right: "6%",
-    floatDuration: "26s",
-    delay: "1s",
-    size: "text-xs",
-  },
-  {
-    text: "BFS / DFS",
-    top: "38%",
-    left: "3%",
-    floatDuration: "21s",
-    delay: "9s",
-    size: "text-xs",
-  },
-  {
-    text: "sort(v.begin(), v.end())",
-    top: "22%",
-    left: "2%",
-    floatDuration: "24s",
-    delay: "5s",
-    size: "text-xs",
-  },
-];
-
-export function CodeBackground() {
-  return (
-    <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-      {/* Layer 1 — Floating code tokens */}
-      {FLOATING_TOKENS.map((token, i) => (
-        <span
-          key={i}
-          className={`animate-code-float absolute font-mono ${token.size} select-none pointer-events-none text-white whitespace-nowrap`}
-          style={{
-            top: token.top,
-            left: token.left,
-            right: token.right,
-            animationDuration: token.floatDuration,
-            animationDelay: token.delay,
-            opacity: 0.035,
-          }}
-        >
-          {token.text}
-        </span>
-      ))}
-
-      {/* Layer 2 — Gradient orbs (slow drift via CSS transform animation) */}
-      <div
-        className="absolute -top-32 -right-32 size-[600px] rounded-full blur-3xl"
-        style={{
-          background:
-            "radial-gradient(circle, oklch(0.62 0.18 287 / 0.18) 0%, transparent 70%)",
-        }}
-      />
-      <div
-        className="absolute -bottom-48 -left-24 size-[500px] rounded-full blur-3xl"
-        style={{
-          background:
-            "radial-gradient(circle, oklch(0.54 0.18 285 / 0.14) 0%, transparent 70%)",
-        }}
-      />
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[700px] rounded-full blur-3xl"
-        style={{
-          background:
-            "radial-gradient(circle, oklch(0.62 0.18 287 / 0.06) 0%, transparent 60%)",
-        }}
-      />
-
-      {/* Layer 3 — Dot grid */}
-      <div className="absolute inset-0 hero-dot-grid opacity-40" />
-
-      {/* Layer 4 — Bottom fade to page background */}
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950 to-transparent" />
-    </div>
   );
 }
 </file>
@@ -3658,27 +3557,6 @@ When generating code:
 9. **Accessibility always** — respect reduced motion, add aria labels
 </file>
 
-<file path="astro.config.mjs">
-// @ts-check
-import { defineConfig } from "astro/config";
-import react from "@astrojs/react";
-import tailwindcss from "@tailwindcss/vite";
-import { fileURLToPath } from "url";
-
-// https://astro.build/config
-export default defineConfig({
-  integrations: [react()],
-  vite: {
-    plugins: [tailwindcss()],
-    resolve: {
-      alias: {
-        "@": fileURLToPath(new URL("./src", import.meta.url)),
-      },
-    },
-  },
-});
-</file>
-
 <file path="tsconfig.json">
 {
   "extends": "astro/tsconfigs/strict",
@@ -3695,370 +3573,28 @@ export default defineConfig({
 }
 </file>
 
-<file path="src/lib/constants.ts">
-// ─── Site Identity ─────────────────────────────────────────────────────────
-export const SITE_NAME = "مسابقه برنامه‌نویسی دانشگاه بیرجند";
-export const SITE_SHORT_NAME = "BCPC";
-export const SITE_YEAR = "2026";
-export const SITE_UNIVERSITY = "دانشگاه بیرجند";
-export const SITE_DESCRIPTION =
-  "رقابت برنامه‌نویسی دانشجویی دانشگاه بیرجند؛ جایی برای رقابت، حل مسئله و محک زدن مهارت‌های برنامه‌نویسی";
+<file path="astro.config.mjs">
+// @ts-check
+import { defineConfig } from "astro/config";
+import react from "@astrojs/react";
+import tailwindcss from "@tailwindcss/vite";
+import { fileURLToPath } from "url";
 
-// ─── Contest Date ────────────────────────────────────────────────────────────
-export const CONTEST_DATE = new Date("2026-11-15T09:00:00");
-export const CONTEST_DATE_PERSIAN = "۱۵ آبان ۱۴۰۵";
-export const CONTEST_LOCATION = "دانشگاه بیرجند · دانشکده فنی و مهندسی";
-
-// ─── Hero Section ───────────────────────────────────────────────────────────
-export const HERO_BADGE = "ICPC Regional · University of Birjand";
-export const HERO_EYEBROW = "پنجمین دوره مسابقه";
-export const HERO_TITLE_LINE1 = "مسابقه برنامه‌نویسی";
-export const HERO_TITLE_ACCENT = "بیرجند";
-export const HERO_SUBTITLE =
-  "سه نفر، یک کامپیوتر و پنج ساعت زمان. آماده‌اید مهارت‌تان را به چالش بکشید و ببینید در رقابت با بهترین تیم‌ها چه نتیجه‌ای می‌گیرید؟";
-export const COUNTDOWN_LABEL = "تا شروع مسابقه";
-
-// ─── CTAs ────────────────────────────────────────────────────────────────────
-export const CTA_REGISTER = "ثبت‌نام در مسابقه";
-export const CTA_REGISTER_SHORT = "ثبت‌نام";
-export const CTA_ABOUT = "درباره BCPC";
-export const CTA_LEARN_MORE = "بیشتر بدانید";
-
-// ─── Navigation Links ────────────────────────────────────────────────────────
-export const NAV_LINKS = [
-  { href: "/", label: "خانه" },
-  { href: "/about", label: "درباره مسابقه" },
-  { href: "/gallery", label: "گالری" },
-  { href: "/contact", label: "تماس با ما" },
-] as const;
-
-// ─── Stats ───────────────────────────────────────────────────────────────────
-export const STATS = [
-  { label: "تیم شرکت‌کننده", value: 48, suffix: "+" },
-  { label: "مسئله مسابقه", value: 12, suffix: "" },
-  { label: "دانشگاه شرکت‌کننده", value: 8, suffix: "" },
-  { label: "دوره مسابقه", value: 5, suffix: "" },
-] as const;
-
-// ─── Highlights ─────────────────────────────────────────────────────────────
-export const HIGHLIGHTS = [
-  {
-    title: "یک رقابت تیمی واقعی",
-    description:
-      "در تیم‌های سه‌نفره کنار هم‌تیمی‌هایتان فکر کنید، راه‌حل پیدا کنید و برای رسیدن به رتبه‌های برتر رقابت کنید.",
-    icon: "Users",
+// https://astro.build/config
+export default defineConfig({
+  site: "https://domjudge-tools.github.io",
+  base: "/bcpc-front",
+  output: "static",
+  integrations: [react()],
+  vite: {
+    plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        "@": fileURLToPath(new URL("./src", import.meta.url)),
+      },
+    },
   },
-  {
-    title: "رقابت برای برد",
-    description:
-      "تیم‌های برتر علاوه بر کسب رتبه، جوایز نقدی و لوح تقدیر دریافت می‌کنند.",
-    icon: "Trophy",
-  },
-  {
-    title: "آشنایی با آدم‌های هم‌مسیر",
-    description:
-      "با دانشجویان، برنامه‌نویسان و علاقه‌مندان دنیای رقابتی برنامه‌نویسی آشنا شوید و ارتباط‌های جدید بسازید.",
-    icon: "Network",
-  },
-] as const;
-
-// ─── Contest Format ──────────────────────────────────────────────────────────
-export const CONTEST_FORMAT = [
-  {
-    title: "تیم‌های ۳ نفره",
-    description:
-      "هر تیم از سه دانشجو تشکیل می‌شود. موفقیت در مسابقه فقط به کدنویسی خوب بستگی ندارد؛ همکاری و مدیریت درست زمان هم مهم است.",
-    icon: "Users",
-  },
-  {
-    title: "یک کامپیوتر برای هر تیم",
-    description:
-      "هر سه عضو تیم باید مسئله‌ها را با یک کامپیوتر حل کنند؛ درست مثل مسابقات رسمی ICPC.",
-    icon: "Monitor",
-  },
-  {
-    title: "۵ ساعت رقابت",
-    description:
-      "پنج ساعت فرصت دارید تا در میان مجموعه‌ای از مسئله‌های متنوع و چالش‌برانگیز، هر تعداد مسئله که می‌توانید حل کنید.",
-    icon: "Clock",
-  },
-  {
-    title: "داوری لحظه‌ای",
-    description:
-      "راه‌حل را ارسال کنید و نتیجه را سریع ببینید. سیستم داوری به‌صورت خودکار مشخص می‌کند که پاسخ شما پذیرفته شده یا نه.",
-    icon: "Zap",
-  },
-] as const;
-
-// ─── What is ICPC Section ────────────────────────────────────────────────────
-export const ICPC_SECTION_EYEBROW = "آشنایی با ICPC";
-export const ICPC_SECTION_TITLE = "ICPC چیست؟";
-
-export const ICPC_PARAGRAPHS = [
-  "ICPC (International Collegiate Programming Contest) یکی از معتبرترین و شناخته‌شده‌ترین مسابقات برنامه‌نویسی دانشجویی در جهان است. این مسابقه بیش از ۵۰ سال است که برگزار می‌شود و هر سال دانشجوهایی از دانشگاه‌های سراسر دنیا در آن با یکدیگر رقابت می‌کنند.",
-  "BCPC با هدف ایجاد تجربه‌ای نزدیک به فضای مسابقات ICPC در دانشگاه بیرجند برگزار می‌شود. تیم‌های برتر این رقابت می‌توانند مسیر خود را برای حضور در مراحل بالاتر مسابقات ICPC ادامه دهند.",
-] as const;
-
-export const ICPC_HIGHLIGHTS = [
-  { icon: "Globe2", text: "رقابت دانشجویان از بیش از ۱۰۰ کشور" },
-  { icon: "CalendarDays", text: "بیش از ۵۰ سال سابقه برگزاری" },
-  { icon: "Star", text: "یکی از معتبرترین مسابقات برنامه‌نویسی دانشجویی جهان" },
-] as const;
-
-export const ICPC_PIPELINE = [
-  {
-    step: "01",
-    label: "BCPC",
-    sublabel: "مرحله محلی · دانشگاه بیرجند",
-    isCurrent: true,
-  },
-  {
-    step: "02",
-    label: "ICPC Regional",
-    sublabel: "مرحله منطقه‌ای · ایران",
-    isCurrent: false,
-  },
-  {
-    step: "03",
-    label: "World Finals",
-    sublabel: "مرحله جهانی · ICPC",
-    isCurrent: false,
-  },
-] as const;
-
-// ─── Timeline Section ────────────────────────────────────────────────────────
-export const TIMELINE_SECTION_EYEBROW = "تقویم مسابقه";
-export const TIMELINE_SECTION_TITLE = "تا روز مسابقه چه مراحلی داریم؟";
-export const TIMELINE_SECTION_SUBTITLE =
-  "از ثبت‌نام تا روز مسابقه، مسیر پیش رو را قدم‌به‌قدم ببینید.";
-
-// ─── Timeline ────────────────────────────────────────────────────────────────
-export const TIMELINE = [
-  {
-    phase: "ثبت‌نام تیم‌ها",
-    date: "مهر ۱۴۰۵",
-    description:
-      "تیم سه‌نفره‌تان را تشکیل دهید و اطلاعات اعضای تیم را ثبت کنید. ظرفیت ثبت‌نام محدود است.",
-    icon: "ClipboardList",
-    status: "upcoming" as const,
-  },
-  {
-    phase: "سشن تمرینی",
-    date: "اوایل آبان ۱۴۰۵",
-    description:
-      "قبل از مسابقه اصلی، در یک جلسه تمرینی با محیط مسابقه، سیستم داوری و نحوه حل و ارسال مسئله‌ها آشنا شوید.",
-    icon: "Code2",
-    status: "upcoming" as const,
-  },
-  {
-    phase: "روز مسابقه",
-    date: CONTEST_DATE_PERSIAN,
-    description:
-      "پنج ساعت فرصت دارید تا با یک کامپیوتر، ۱۲ مسئله را حل کنید و برای رسیدن به رتبه‌های برتر بجنگید.",
-    icon: "Trophy",
-    status: "upcoming" as const,
-  },
-  {
-    phase: "اعلام نتایج و اختتامیه",
-    date: CONTEST_DATE_PERSIAN,
-    description:
-      "در پایان، نتایج اعلام می‌شود و از تیم‌های برتر با اهدای جوایز و لوح تقدیر تقدیر خواهد شد.",
-    icon: "Award",
-    status: "upcoming" as const,
-  },
-] as const;
-
-// ─── Prizes ──────────────────────────────────────────────────────────────────
-export const PRIZES = [
-  {
-    rank: 2,
-    title: "مقام دوم",
-    medal: "🥈",
-    reward: "جایزه نقدی + لوح تقدیر",
-    variant: "silver" as const,
-  },
-  {
-    rank: 1,
-    title: "مقام اول",
-    medal: "🥇",
-    reward: "جایزه نقدی + لوح تقدیر + معرفی به مرحله ملی",
-    variant: "gold" as const,
-  },
-  {
-    rank: 3,
-    title: "مقام سوم",
-    medal: "🥉",
-    reward: "جایزه نقدی + لوح تقدیر",
-    variant: "bronze" as const,
-  },
-] as const;
-
-// ─── FAQ ─────────────────────────────────────────────────────────────────────
-export const FAQ_ITEMS = [
-  {
-    question: "چه کسانی می‌توانند در مسابقه شرکت کنند؟",
-    answer:
-      "تمام دانشجویان مقطع کارشناسی و کارشناسی ارشد دانشگاه بیرجند می‌توانند در BCPC شرکت کنند. برای شرکت در مسابقه محدودیت سنی یا شرط معدل وجود ندارد.",
-  },
-  {
-    question: "چطور یک تیم تشکیل دهیم؟",
-    answer:
-      "هر تیم باید دقیقاً سه عضو داشته باشد و اعضای تیم باید از یک دانشگاه باشند. ثبت‌نام به‌صورت انفرادی یا با تیم‌های کمتر از سه نفر امکان‌پذیر نیست.",
-  },
-  {
-    question: "چه زبان‌های برنامه‌نویسی پشتیبانی می‌شوند؟",
-    answer:
-      "زبان‌های C، C++17 و Java پشتیبانی می‌شوند. در برخی مسائل امکان استفاده از Python نیز وجود دارد. برای نوشتن کد می‌توانید از هر IDE یا ویرایشگر متنی نصب‌شده روی سیستم مسابقه استفاده کنید.",
-  },
-  {
-    question: "آیا در طول مسابقه به اینترنت دسترسی داریم؟",
-    answer:
-      "خیر. در طول مسابقه دسترسی به اینترنت مجاز نیست. هر تیم می‌تواند یک دفترچه یادداشت فیزیکی حداکثر ۲۵ صفحه‌ای همراه خود داشته باشد.",
-  },
-  {
-    question: "مسابقه حضوری است یا آنلاین؟",
-    answer:
-      "BCPC به‌صورت کاملاً حضوری و در دانشگاه بیرجند برگزار می‌شود. حضور هر سه عضو تیم در محل مسابقه الزامی است.",
-  },
-  {
-    question: "رتبه‌بندی تیم‌ها چگونه انجام می‌شود؟",
-    answer:
-      "تیم‌ها ابتدا بر اساس تعداد مسئله‌های حل‌شده رتبه‌بندی می‌شوند. اگر تعداد مسئله‌های حل‌شده برابر باشد، تیمی که زمان کمتری داشته باشد رتبه بالاتری می‌گیرد. برای هر ارسال نادرست نیز ۲۰ دقیقه جریمه زمانی در نظر گرفته می‌شود.",
-  },
-] as const;
-
-// ─── Sponsors ────────────────────────────────────────────────────────────────
-export const SPONSORS = [
-  {
-    name: "دانشگاه بیرجند",
-    tagline: "",
-    tier: "gold" as const,
-  },
-  {
-    name: "انجمن علمی مهندسی کامپیوتر دانشگاه بیرجند",
-    tagline: "",
-    tier: "platinum" as const,
-  },
-  {
-    name: "دانشکده مهندسی کامپیوتر",
-    tagline: "",
-    tier: "silver" as const,
-  },
-] as const;
-
-export const SPONSORS_SECTION_EYEBROW = "حامیان مسابقه";
-export const SPONSORS_SECTION_TITLE = "با حمایت همراهان BCPC";
-export const SPONSORS_SECTION_SUBTITLE =
-  "برگزاری BCPC با همراهی دانشگاه و مجموعه‌هایی انجام می‌شود که از رشد برنامه‌نویسی و رقابت‌های دانشجویی حمایت می‌کنند.";
-
-export const SPONSORS_TIER_LABELS = {
-  platinum: "platinum",
-  gold: "gold",
-  silver: "silver",
-} as const;
-
-export const SPONSORS_BECOME_TEXT = "حامی BCPC شوید";
-export const SPONSORS_BECOME_HREF = "/contact";
-
-// ─── Footer ──────────────────────────────────────────────────────────────────
-export const FOOTER_LINKS = [
-  {
-    title: "مسابقه",
-    links: [
-      { href: "/about", label: "درباره BCPC" },
-      { href: "/register", label: "ثبت‌نام" },
-      { href: "/gallery", label: "گالری" },
-    ],
-  },
-  {
-    title: "راهنما",
-    links: [
-      { href: "/contact", label: "تماس با ما" },
-      { href: "/login", label: "ورود به سامانه مسابقه" },
-    ],
-  },
-] as const;
-
-export const FOOTER_COPYRIGHT = `تمامی حقوق محفوظ است · BCPC ${SITE_YEAR} · دانشگاه بیرجند`;
-export const FOOTER_TAGLINE = "رقابت برنامه‌نویسی دانشجویی دانشگاه بیرجند";
-export const FOOTER_BACK_TO_TOP = "بازگشت به بالا";
-export const FOOTER_SOCIAL_ARIA = "شبکه‌های اجتماعی";
-export const FOOTER_SOCIAL = [
-  { href: "#", label: "اینستاگرام", icon: "Globe2" },
-  { href: "#", label: "تلگرام", icon: "MessageCircle" },
-  { href: "#", label: "گیت‌هاب", icon: "Code2" },
-] as const;
-
-// ─── Hero — Countdown time-unit labels ──────────────────────────────────────
-export const TIME_UNIT_LABELS = {
-  days: "روز",
-  hours: "ساعت",
-  minutes: "دقیقه",
-  seconds: "ثانیه",
-} as const;
-
-export const SCROLL_INDICATOR_TEXT = "برای ادامه اسکرول کنید";
-
-// ─── Stats Section ───────────────────────────────────────────────────────────
-export const STATS_SECTION_ARIA = "آمار مسابقه";
-
-// ─── What is ICPC — extra strings ───────────────────────────────────────────
-export const ICPC_HIGHLIGHTS_ARIA = "درباره ICPC";
-export const ICPC_PIPELINE_ARIA = "مسیر مسابقات ICPC";
-export const ICPC_PIPELINE_HEADER = "// مسیر پیشرفت";
-export const ICPC_PIPELINE_YOU_HERE = "شما اینجا هستید";
-export const ICPC_PIPELINE_NOTE =
-  "تیم‌های برتر هر مرحله می‌توانند به مرحله بعد راه پیدا کنند";
-
-// ─── Contest Format Section ──────────────────────────────────────────────────
-export const FORMAT_SECTION_EYEBROW = "ساختار مسابقه";
-export const FORMAT_SECTION_TITLE_PREFIX = "با حال‌وهوای";
-export const FORMAT_SECTION_TITLE_ACCENT = "ICPC جهانی";
-export const FORMAT_SECTION_SUBTITLE =
-  "BCPC با الهام از فرمت مسابقات بین‌المللی ICPC برگزار می‌شود تا تجربه‌ای واقعی از یک رقابت برنامه‌نویسی تیمی را در دانشگاه بیرجند تجربه کنید.";
-
-export const FORMAT_SECTION_NOTE =
-  "مسابقه BCPC زیر نظر انجمن علمی دانشجویی دانشگاه بیرجند و بر اساس استانداردهای مسابقات ICPC برگزار می‌شود";
-
-// ─── Highlights Section ──────────────────────────────────────────────────────
-export const HIGHLIGHTS_SECTION_EYEBROW = "چرا BCPC؟";
-export const HIGHLIGHTS_SECTION_TITLE = "چرا باید در BCPC شرکت کنید؟";
-export const HIGHLIGHTS_SECTION_SUBTITLE =
-  "اینجا فقط قرار نیست کد بزنید؛ قرار است رقابت کنید، مسئله حل کنید و تجربه‌ای متفاوت از برنامه‌نویسی تیمی داشته باشید.";
-
-export const HIGHLIGHTS_SECTION_LINK = "آشنایی بیشتر با مسابقه";
-
-// ─── Timeline Section ────────────────────────────────────────────────────────
-export const TIMELINE_SECTION_OL_ARIA = "مراحل برگزاری مسابقه";
-
-// ─── Header / Navigation ─────────────────────────────────────────────────────
-export const HEADER_LOGO_LETTER = "B";
-export const HEADER_LOGO_ARIA = `${SITE_SHORT_NAME} — صفحه اصلی`;
-export const NAV_DESKTOP_ARIA = "ناوبری اصلی";
-export const NAV_MOBILE_ARIA = "منوی موبایل";
-export const MOBILE_MENU_OPEN_ARIA = "باز کردن منو";
-export const MOBILE_MENU_CLOSE_ARIA = "بستن منو";
-
-// ─── Prizes Section ──────────────────────────────────────────────────────────
-export const PRIZES_SECTION_EYEBROW = "جوایز مسابقه";
-export const PRIZES_SECTION_TITLE = "برای بهترین‌ها";
-export const PRIZES_SECTION_SUBTITLE =
-  "تیم‌های برتر علاوه بر دریافت جوایز نقدی و لوح تقدیر، فرصت ادامه مسیر در مراحل بالاتر مسابقات ICPC را هم خواهند داشت.";
-
-export const PRIZES_RANK_LABEL = "مقام";
-export const PRIZES_ARIA = "جوایز مسابقه";
-
-// ─── FAQ Section ─────────────────────────────────────────────────────────────
-export const FAQ_SECTION_EYEBROW = "سؤالات متداول";
-export const FAQ_SECTION_TITLE = "سؤالات شما، پاسخ‌های ما";
-export const FAQ_SECTION_SUBTITLE =
-  "پاسخ سؤال‌تان را پیدا نکردید؟ از طریق صفحه تماس با ما با تیم برگزارکننده در ارتباط باشید.";
-
-export const FAQ_OPEN_ARIA = "نمایش پاسخ";
-export const FAQ_CLOSE_ARIA = "بستن پاسخ";
-export const FAQ_CONTACT_LINK = "/contact";
-export const FAQ_CONTACT_TEXT = "تماس با ما";
-export const FAQ_BOTTOM_NOTE = "آماده رقابتید؟ جای شما بین تیم‌ها خالی است.";
+});
 </file>
 
 <file path="package.json">
@@ -4459,6 +3995,200 @@ Made with ❤️ by the BCPC Team
 </div>
 </file>
 
+<file path="src/components/animations/CodeBackground.tsx">
+/**
+ * CodeBackground — decorative hero background for BCPC.
+ *
+ * Renders three visual layers (all CSS-driven, no JS per frame):
+ *  1. Floating monospace algorithm/code tokens at very low opacity
+ *  2. Two slow-drifting gradient orbs
+ *  3. A dot-grid overlay
+ *
+ * Positions are intentionally kept to screen edges so they never
+ * compete with the centered hero content.
+ */
+
+interface FloatingToken {
+  text: string;
+  top: string;
+  left?: string;
+  right?: string;
+  floatDuration: string;
+  delay: string;
+  size: "text-xs" | "text-sm" | "text-base";
+}
+
+// All tokens are kept near screen edges (left/right margins) so they
+// don't interfere with the centered content column.
+const FLOATING_TOKENS: FloatingToken[] = [
+  {
+    text: "5859-8312-1853-9392 - تجارت",
+    top: "24%",
+    left: "8%",
+    floatDuration: "27s",
+    delay: "3.5s",
+    size: "text-base",
+  },
+  {
+    text: "O(n log n)",
+    top: "9%",
+    left: "3%",
+    floatDuration: "22s",
+    delay: "0s",
+    size: "text-xs",
+  },
+  {
+    text: "while (true) {",
+    top: "18%",
+    right: "4%",
+    floatDuration: "27s",
+    delay: "3.5s",
+    size: "text-sm",
+  },
+  {
+    text: "dp[i][j] = min(...)",
+    top: "30%",
+    right: "2%",
+    floatDuration: "20s",
+    delay: "1.2s",
+    size: "text-xs",
+  },
+  {
+    text: "آه دولوپر گردن گیره",
+    top: "7%",
+    right: "40%",
+    floatDuration: "26s",
+    delay: "1s",
+    size: "text-base",
+  },
+  {
+    text: "priority_queue<int>",
+    top: "44%",
+    right: "5%",
+    floatDuration: "25s",
+    delay: "6s",
+    size: "text-xs",
+  },
+  {
+    text: "#include <bits/stdc++.h>",
+    top: "58%",
+    left: "2%",
+    floatDuration: "30s",
+    delay: "2s",
+    size: "text-xs",
+  },
+  {
+    text: "dijkstra(src, adj)",
+    top: "70%",
+    right: "3%",
+    floatDuration: "23s",
+    delay: "4.5s",
+    size: "text-xs",
+  },
+  {
+    text: "پول دولوپر خوردن نداره",
+    top: "32%",
+    right: "23%",
+    floatDuration: "26s",
+    delay: "1s",
+    size: "text-base",
+  },
+  {
+    text: "long long MOD = 1e9+7;",
+    top: "80%",
+    left: "4%",
+    floatDuration: "19s",
+    delay: "7s",
+    size: "text-xs",
+  },
+  {
+    text: "Floyd-Warshall",
+    top: "88%",
+    right: "6%",
+    floatDuration: "26s",
+    delay: "1s",
+    size: "text-xs",
+  },
+  {
+    text: "BFS / DFS",
+    top: "38%",
+    left: "3%",
+    floatDuration: "21s",
+    delay: "9s",
+    size: "text-xs",
+  },
+  {
+    text: "پول منو بدین",
+    top: "88%",
+    left: "16%",
+    floatDuration: "26s",
+    delay: "1s",
+    size: "text-base",
+  },
+  {
+    text: "sort(v.begin(), v.end())",
+    top: "22%",
+    left: "2%",
+    floatDuration: "24s",
+    delay: "5s",
+    size: "text-xs",
+  },
+];
+
+export function CodeBackground() {
+  return (
+    <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+      {/* Layer 1 — Floating code tokens */}
+      {FLOATING_TOKENS.map((token, i) => (
+        <span
+          key={i}
+          className={`animate-code-float absolute font-mono ${token.size} select-none pointer-events-none text-white whitespace-nowrap`}
+          style={{
+            top: token.top,
+            left: token.left,
+            right: token.right,
+            animationDuration: token.floatDuration,
+            animationDelay: token.delay,
+            opacity: 0.035,
+          }}
+        >
+          {token.text}
+        </span>
+      ))}
+
+      {/* Layer 2 — Gradient orbs (slow drift via CSS transform animation) */}
+      <div
+        className="absolute -top-32 -right-32 size-[600px] rounded-full blur-3xl"
+        style={{
+          background:
+            "radial-gradient(circle, oklch(0.62 0.18 287 / 0.18) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        className="absolute -bottom-48 -left-24 size-[500px] rounded-full blur-3xl"
+        style={{
+          background:
+            "radial-gradient(circle, oklch(0.54 0.18 285 / 0.14) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[700px] rounded-full blur-3xl"
+        style={{
+          background:
+            "radial-gradient(circle, oklch(0.62 0.18 287 / 0.2) 0%, transparent 60%)",
+        }}
+      />
+
+      {/* Layer 3 — Dot grid */}
+      <div className="absolute inset-0 hero-dot-grid opacity-40" />
+
+      {/* Layer 4 — Bottom fade to page background */}
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950 to-transparent" />
+    </div>
+  );
+}
+</file>
+
 <file path="src/components/layout/Header.tsx">
 "use client";
 
@@ -4775,6 +4505,98 @@ export function Header() {
 }
 </file>
 
+<file path="src/components/sections/HighlightsSection.tsx">
+import { FadeIn } from "@/components/animations/FadeIn";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  HIGHLIGHTS,
+  HIGHLIGHTS_SECTION_EYEBROW,
+  HIGHLIGHTS_SECTION_TITLE,
+  HIGHLIGHTS_SECTION_SUBTITLE,
+  HIGHLIGHTS_SECTION_LINK,
+} from "@/lib/constants";
+import { Users, Trophy, Network, ArrowLeft } from "lucide-react";
+import { motion } from "motion/react";
+
+const iconMap = { Users, Trophy, Network };
+
+export function HighlightsSection() {
+  return (
+    <section className="relative py-24 px-4">
+      {/* Background accent */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
+
+      <div className="container mx-auto max-w-6xl">
+        <FadeIn direction="up" className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 liquid-glass-pill mb-4 text-xs font-medium text-primary">
+            <span className="size-1.5 rounded-full bg-primary" />
+            {HIGHLIGHTS_SECTION_EYEBROW}
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            {HIGHLIGHTS_SECTION_TITLE}
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            {HIGHLIGHTS_SECTION_SUBTITLE}
+          </p>
+        </FadeIn>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {HIGHLIGHTS.map((item, index) => {
+            const Icon = iconMap[item.icon as keyof typeof iconMap];
+            return (
+              <FadeIn key={item.title} delay={index * 0.1} direction="up">
+                <motion.div
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.3 }}
+                  className="h-full"
+                >
+                  <Card className="h-full text-center hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 border-border/50 group relative overflow-hidden">
+                    {/* Hover gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-purple-500/5 transition-all duration-500" />
+
+                    <CardHeader className="relative">
+                      <motion.div
+                        whileHover={{ rotate: [0, -10, 10, 0] }}
+                        transition={{ duration: 0.5 }}
+                        className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4 border border-primary/20"
+                      >
+                        <Icon className="size-6 text-primary" />
+                      </motion.div>
+                      <CardTitle className="text-xl">{item.title}</CardTitle>
+                    </CardHeader>
+                    <CardDescription className="px-6 pb-6 text-base leading-relaxed relative">
+                      {item.description}
+                    </CardDescription>
+                  </Card>
+                </motion.div>
+              </FadeIn>
+            );
+          })}
+        </div>
+
+        {/* CTA row */}
+        <FadeIn direction="up" delay={0.3}>
+          <div className="mt-16 text-center">
+            <a
+              href="/about"
+              className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all"
+            >
+              {HIGHLIGHTS_SECTION_LINK}
+              <ArrowLeft className="size-4" />
+            </a>
+          </div>
+        </FadeIn>
+      </div>
+    </section>
+  );
+}
+</file>
+
 <file path="src/components/sections/HeroSection.tsx">
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
@@ -4836,17 +4658,17 @@ export function HeroSection() {
         <div className="w-full max-w-5xl mx-auto">
           <StaggerContainer staggerDelay={0.1}>
             {/* ── Eyebrow ───────────────────────────────────────────────── */}
-            <StaggerItem>
+            {/* <StaggerItem>
               <div className="flex justify-center mb-3 md:mb-4">
                 <div className="liquid-glass-pill inline-flex items-center gap-2 text-xs font-medium text-white/60 border border-white/10">
                   <Terminal className="size-3 text-primary" />
                   <span>{HERO_EYEBROW}</span>
                 </div>
               </div>
-            </StaggerItem>
+            </StaggerItem> */}
 
             {/* ── ICPC live badge ───────────────────────────────────────── */}
-            <StaggerItem>
+            {/* <StaggerItem>
               <div className="flex justify-center mb-4 md:mb-5">
                 <div className="flex items-center gap-2.5">
                   <span className="relative flex size-2">
@@ -4858,7 +4680,7 @@ export function HeroSection() {
                   </span>
                 </div>
               </div>
-            </StaggerItem>
+            </StaggerItem> */}
 
             {/* ── Main title ────────────────────────────────────────────── */}
             <StaggerItem>
@@ -4964,7 +4786,7 @@ export function HeroSection() {
         className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-1.5"
         aria-hidden="true"
       >
-        <span className="font-mono text-[9px] text-white/20 tracking-widest uppercase">
+        <span className="text-[9px] text-white/20 tracking-widest uppercase">
           {SCROLL_INDICATOR_TEXT}
         </span>
         <motion.div
@@ -5023,95 +4845,776 @@ function CountdownUnit({ unit, index }: CountdownUnitProps) {
 }
 </file>
 
-<file path="src/components/sections/HighlightsSection.tsx">
-import { FadeIn } from "@/components/animations/FadeIn";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import {
-  HIGHLIGHTS,
-  HIGHLIGHTS_SECTION_EYEBROW,
-  HIGHLIGHTS_SECTION_TITLE,
-  HIGHLIGHTS_SECTION_SUBTITLE,
-  HIGHLIGHTS_SECTION_LINK,
-} from "@/lib/constants";
-import { Users, Trophy, Network, ArrowLeft } from "lucide-react";
-import { motion } from "motion/react";
+<file path="src/lib/constants.ts">
+// ─── Site Identity ─────────────────────────────────────────────────────────
+export const SITE_NAME = "مسابقه برنامه‌نویسی دانشگاه بیرجند";
+export const SITE_SHORT_NAME = "BCPC";
+export const SITE_YEAR = "2026";
+export const SITE_UNIVERSITY = "دانشگاه بیرجند";
+export const SITE_DESCRIPTION =
+  "رقابت برنامه‌نویسی دانشجویی دانشگاه بیرجند؛ جایی برای رقابت، حل مسئله و محک زدن مهارت‌های برنامه‌نویسی";
 
-const iconMap = { Users, Trophy, Network };
+// ─── Contest Date ────────────────────────────────────────────────────────────
+export const CONTEST_DATE = new Date("2026-11-15T09:00:00");
+export const CONTEST_DATE_PERSIAN = "۱۵ آبان ۱۴۰۵";
+export const CONTEST_LOCATION = "دانشگاه بیرجند · دانشکده فنی و مهندسی";
 
-export function HighlightsSection() {
-  return (
-    <section className="relative py-24 px-4">
-      {/* Background accent */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
+// ─── Hero Section ───────────────────────────────────────────────────────────
+export const HERO_BADGE = "ICPC Regional · University of Birjand";
+export const HERO_EYEBROW = "پنجمین دوره مسابقه";
+export const HERO_TITLE_LINE1 = "مسابقات برنامه‌نویسی الگوریتمی";
+export const HERO_TITLE_ACCENT = "دانشگاه بیرجند";
+export const HERO_SUBTITLE =
+  "سه نفر، یک کامپیوتر و پنج ساعت زمان. آماده‌اید مهارت‌تان را به چالش بکشید و ببینید در رقابت با بهترین تیم‌ها چه نتیجه‌ای می‌گیرید؟";
+export const COUNTDOWN_LABEL = "تا شروع مسابقه";
 
-      <div className="container mx-auto max-w-6xl">
-        <FadeIn direction="up" className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 liquid-glass-pill mb-4 text-xs font-medium text-primary">
-            <span className="size-1.5 rounded-full bg-primary" />
-            {HIGHLIGHTS_SECTION_EYEBROW}
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            {HIGHLIGHTS_SECTION_TITLE}
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {HIGHLIGHTS_SECTION_SUBTITLE}
-          </p>
-        </FadeIn>
+// ─── CTAs ────────────────────────────────────────────────────────────────────
+export const CTA_REGISTER = "ثبت‌نام در مسابقه";
+export const CTA_REGISTER_SHORT = "ثبت‌نام";
+export const CTA_ABOUT = "درباره BCPC";
+export const CTA_LEARN_MORE = "بیشتر بدانید";
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {HIGHLIGHTS.map((item, index) => {
-            const Icon = iconMap[item.icon as keyof typeof iconMap];
-            return (
-              <FadeIn key={item.title} delay={index * 0.1} direction="up">
-                <motion.div
-                  whileHover={{ y: -6 }}
-                  transition={{ duration: 0.3 }}
-                  className="h-full"
-                >
-                  <Card className="h-full text-center hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 border-border/50 group relative overflow-hidden">
-                    {/* Hover gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-purple-500/5 transition-all duration-500" />
+// ─── Navigation Links ────────────────────────────────────────────────────────
+export const NAV_LINKS = [
+  { href: "/", label: "خانه" },
+  { href: "/about", label: "درباره مسابقه" },
+  { href: "/gallery", label: "گالری" },
+  { href: "/contact", label: "تماس با ما" },
+] as const;
 
-                    <CardHeader className="relative">
-                      <motion.div
-                        whileHover={{ rotate: [0, -10, 10, 0] }}
-                        transition={{ duration: 0.5 }}
-                        className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4 border border-primary/20"
-                      >
-                        <Icon className="size-6 text-primary" />
-                      </motion.div>
-                      <CardTitle className="text-xl">{item.title}</CardTitle>
-                    </CardHeader>
-                    <CardDescription className="px-6 pb-6 text-base leading-relaxed relative">
-                      {item.description}
-                    </CardDescription>
-                  </Card>
-                </motion.div>
-              </FadeIn>
-            );
-          })}
-        </div>
+// ─── Stats ───────────────────────────────────────────────────────────────────
+export const STATS = [
+  { label: "تیم شرکت‌کننده", value: 48, suffix: "+" },
+  { label: "سوال", value: 12, suffix: "" },
+  { label: "دانشگاه", value: 8, suffix: "" },
+  { label: "دوره برگزاری", value: 5, suffix: "" },
+] as const;
 
-        {/* CTA row */}
-        <FadeIn direction="up" delay={0.3}>
-          <div className="mt-16 text-center">
-            <a
-              href="/about"
-              className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all"
-            >
-              {HIGHLIGHTS_SECTION_LINK}
-              <ArrowLeft className="size-4" />
-            </a>
-          </div>
-        </FadeIn>
-      </div>
-    </section>
+// ─── Highlights ─────────────────────────────────────────────────────────────
+export const HIGHLIGHTS = [
+  {
+    title: "یک رقابت تیمی واقعی",
+    description:
+      "در تیم‌های سه‌نفره کنار هم‌تیمی‌هایتان فکر کنید، راه‌حل پیدا کنید و برای رسیدن به رتبه‌های برتر رقابت کنید.",
+    icon: "Users",
+  },
+  {
+    title: "رقابت برای پیروزی",
+    description:
+      "تیم‌های برتر علاوه بر کسب رتبه، جوایز نقدی و لوح تقدیر دریافت می‌کنند.",
+    icon: "Trophy",
+  },
+  {
+    title: "آشنایی با آدم‌های هم‌مسیر",
+    description:
+      "با دانشجویان، برنامه‌نویسان و علاقه‌مندان دنیای رقابتی برنامه‌نویسی آشنا شوید و ارتباط‌های جدید بسازید.",
+    icon: "Network",
+  },
+] as const;
+
+// ─── Contest Format ──────────────────────────────────────────────────────────
+export const CONTEST_FORMAT = [
+  {
+    title: "تیم‌های ۳ نفره",
+    description:
+      "هر تیم از سه دانشجو تشکیل می‌شود. موفقیت در مسابقه فقط به کدنویسی خوب بستگی ندارد؛ همکاری و مدیریت درست زمان هم مهم است.",
+    icon: "Users",
+  },
+  {
+    title: "یک کامپیوتر برای هر تیم",
+    description:
+      "هر سه عضو تیم باید مسئله‌ها را با یک کامپیوتر حل کنند؛ درست مثل مسابقات رسمی ICPC.",
+    icon: "Monitor",
+  },
+  {
+    title: "۵ ساعت رقابت",
+    description:
+      "پنج ساعت فرصت دارید تا در میان مجموعه‌ای از مسئله‌های متنوع و چالش‌برانگیز، هر تعداد مسئله که می‌توانید حل کنید.",
+    icon: "Clock",
+  },
+  {
+    title: "داوری لحظه‌ای",
+    description:
+      "راه‌حل را ارسال کنید و نتیجه را سریع ببینید. سیستم داوری به‌صورت خودکار مشخص می‌کند که پاسخ شما پذیرفته شده یا نه.",
+    icon: "Zap",
+  },
+] as const;
+
+// ─── What is ICPC Section ────────────────────────────────────────────────────
+export const ICPC_SECTION_EYEBROW = "آشنایی با ICPC";
+export const ICPC_SECTION_TITLE = "ICPC چیست؟";
+
+export const ICPC_PARAGRAPHS = [
+  "ICPC (International Collegiate Programming Contest) یکی از معتبرترین و شناخته‌شده‌ترین مسابقات برنامه‌نویسی دانشجویی در جهان است. این مسابقه بیش از ۵۰ سال است که برگزار می‌شود و هر سال دانشجوهایی از دانشگاه‌های سراسر دنیا در آن با یکدیگر رقابت می‌کنند.",
+  "BCPC با هدف ایجاد تجربه‌ای نزدیک به فضای مسابقات ICPC در دانشگاه بیرجند برگزار می‌شود. تیم‌های برتر این رقابت می‌توانند مسیر خود را برای حضور در مراحل بالاتر مسابقات ICPC ادامه دهند.",
+] as const;
+
+export const ICPC_HIGHLIGHTS = [
+  { icon: "Globe2", text: "رقابت دانشجویان از بیش از ۱۰۰ کشور" },
+  { icon: "CalendarDays", text: "بیش از ۵۰ سال سابقه برگزاری" },
+  { icon: "Star", text: "یکی از معتبرترین مسابقات برنامه‌نویسی دانشجویی جهان" },
+] as const;
+
+export const ICPC_PIPELINE = [
+  {
+    step: "01",
+    label: "BCPC",
+    sublabel: "مرحله استانی · دانشگاه بیرجند",
+    isCurrent: true,
+  },
+  {
+    step: "02",
+    label: "ICPC Regional",
+    sublabel: "مرحله کشوری · ایران",
+    isCurrent: false,
+  },
+  {
+    step: "03",
+    label: "World Finals",
+    sublabel: "مرحله بین المللی · ICPC",
+    isCurrent: false,
+  },
+] as const;
+
+// ─── Timeline Section ────────────────────────────────────────────────────────
+export const TIMELINE_SECTION_EYEBROW = "تقویم مسابقه";
+export const TIMELINE_SECTION_TITLE = "تا روز مسابقه چه مراحلی داریم؟";
+export const TIMELINE_SECTION_SUBTITLE =
+  "از ثبت‌نام تا روز مسابقه، مسیر پیش رو را قدم‌به‌قدم ببینید.";
+
+// ─── Timeline ────────────────────────────────────────────────────────────────
+export const TIMELINE = [
+  {
+    phase: "ثبت‌نام تیم‌ها",
+    date: "مهر ۱۴۰۵",
+    description:
+      "تیم سه‌نفره‌تان را تشکیل دهید و اطلاعات اعضای تیم را ثبت کنید. ظرفیت ثبت‌نام محدود است.",
+    icon: "ClipboardList",
+    status: "upcoming" as const,
+  },
+  {
+    phase: "سشن تمرینی",
+    date: "اوایل آبان ۱۴۰۵",
+    description:
+      "قبل از مسابقه اصلی، در یک جلسه تمرینی با محیط مسابقه، سیستم داوری و نحوه حل و ارسال مسئله‌ها آشنا شوید.",
+    icon: "Code2",
+    status: "upcoming" as const,
+  },
+  {
+    phase: "روز مسابقه",
+    date: CONTEST_DATE_PERSIAN,
+    description:
+      "پنج ساعت فرصت دارید تا با یک کامپیوتر، ۱۲ مسئله را حل کنید و برای رسیدن به رتبه‌های برتر بجنگید.",
+    icon: "Trophy",
+    status: "upcoming" as const,
+  },
+  {
+    phase: "اعلام نتایج و اختتامیه",
+    date: CONTEST_DATE_PERSIAN,
+    description:
+      "در پایان، نتایج اعلام می‌شود و از تیم‌های برتر با اهدای جوایز و لوح تقدیر تقدیر خواهد شد.",
+    icon: "Award",
+    status: "upcoming" as const,
+  },
+] as const;
+
+// ─── Prizes ──────────────────────────────────────────────────────────────────
+export const PRIZES = [
+  {
+    rank: 2,
+    title: "مقام دوم",
+    medal: "🥈",
+    reward: "جایزه نقدی + لوح تقدیر",
+    variant: "silver" as const,
+  },
+  {
+    rank: 1,
+    title: "مقام اول",
+    medal: "🥇",
+    reward: "جایزه نقدی + لوح تقدیر + معرفی به مرحله ملی",
+    variant: "gold" as const,
+  },
+  {
+    rank: 3,
+    title: "مقام سوم",
+    medal: "🥉",
+    reward: "جایزه نقدی + لوح تقدیر",
+    variant: "bronze" as const,
+  },
+] as const;
+
+// ─── FAQ ─────────────────────────────────────────────────────────────────────
+export const FAQ_ITEMS = [
+  {
+    question: "چه کسانی می‌توانند در مسابقه شرکت کنند؟",
+    answer:
+      "تمام دانشجویان مقطع کارشناسی و کارشناسی ارشد دانشگاه بیرجند می‌توانند در BCPC شرکت کنند. برای شرکت در مسابقه محدودیت سنی یا شرط معدل وجود ندارد.",
+  },
+  {
+    question: "چطور یک تیم تشکیل دهیم؟",
+    answer:
+      "هر تیم باید دقیقاً سه عضو داشته باشد و اعضای تیم باید از یک دانشگاه باشند. ثبت‌نام به‌صورت انفرادی یا با تیم‌های کمتر از سه نفر امکان‌پذیر نیست.",
+  },
+  {
+    question: "چه زبان‌های برنامه‌نویسی پشتیبانی می‌شوند؟",
+    answer:
+      "زبان‌های C، C++17 و Java پشتیبانی می‌شوند. در برخی مسائل امکان استفاده از Python نیز وجود دارد. برای نوشتن کد می‌توانید از هر IDE یا ویرایشگر متنی نصب‌شده روی سیستم مسابقه استفاده کنید.",
+  },
+  {
+    question: "آیا در طول مسابقه به اینترنت دسترسی داریم؟",
+    answer:
+      "خیر. در طول مسابقه دسترسی به اینترنت مجاز نیست. هر تیم می‌تواند یک دفترچه یادداشت فیزیکی حداکثر ۲۵ صفحه‌ای همراه خود داشته باشد.",
+  },
+  {
+    question: "مسابقه حضوری است یا آنلاین؟",
+    answer:
+      "BCPC به‌صورت کاملاً حضوری و در دانشگاه بیرجند برگزار می‌شود. حضور هر سه عضو تیم در محل مسابقه الزامی است.",
+  },
+  {
+    question: "رتبه‌بندی تیم‌ها چگونه انجام می‌شود؟",
+    answer:
+      "تیم‌ها ابتدا بر اساس تعداد مسئله‌های حل‌شده رتبه‌بندی می‌شوند. اگر تعداد مسئله‌های حل‌شده برابر باشد، تیمی که زمان کمتری داشته باشد رتبه بالاتری می‌گیرد. برای هر ارسال نادرست نیز ۲۰ دقیقه جریمه زمانی در نظر گرفته می‌شود.",
+  },
+] as const;
+
+// ─── Sponsors ────────────────────────────────────────────────────────────────
+export const SPONSORS = [
+  {
+    name: "دانشگاه بیرجند",
+    tagline: "",
+    tier: "gold" as const,
+  },
+  {
+    name: "انجمن علمی مهندسی کامپیوتر دانشگاه بیرجند",
+    tagline: "",
+    tier: "platinum" as const,
+  },
+  {
+    name: "دانشکده مهندسی کامپیوتر",
+    tagline: "",
+    tier: "silver" as const,
+  },
+] as const;
+
+export const SPONSORS_SECTION_EYEBROW = "حامیان مسابقه";
+export const SPONSORS_SECTION_TITLE = "با حمایت همراهان BCPC";
+export const SPONSORS_SECTION_SUBTITLE =
+  "برگزاری BCPC با همراهی دانشگاه و مجموعه‌هایی انجام می‌شود که از رشد برنامه‌نویسی و رقابت‌های دانشجویی حمایت می‌کنند.";
+
+export const SPONSORS_TIER_LABELS = {
+  platinum: "platinum",
+  gold: "gold",
+  silver: "silver",
+} as const;
+
+export const SPONSORS_BECOME_TEXT = "حامی BCPC شوید";
+export const SPONSORS_BECOME_HREF = "/contact";
+
+// ─── Footer ──────────────────────────────────────────────────────────────────
+export const FOOTER_LINKS = [
+  {
+    title: "مسابقه",
+    links: [
+      { href: "/about", label: "درباره BCPC" },
+      { href: "/register", label: "ثبت‌نام" },
+      { href: "/gallery", label: "گالری" },
+    ],
+  },
+  {
+    title: "راهنما",
+    links: [
+      { href: "/contact", label: "تماس با ما" },
+      { href: "/login", label: "ورود به سامانه مسابقه" },
+    ],
+  },
+] as const;
+
+export const FOOTER_COPYRIGHT = `تمامی حقوق محفوظ است · BCPC ${SITE_YEAR} · دانشگاه بیرجند`;
+export const FOOTER_TAGLINE = "رقابت برنامه‌نویسی دانشجویی دانشگاه بیرجند";
+export const FOOTER_BACK_TO_TOP = "بازگشت به بالا";
+export const FOOTER_SOCIAL_ARIA = "شبکه‌های اجتماعی";
+export const FOOTER_SOCIAL = [
+  { href: "#", label: "اینستاگرام", icon: "Globe2" },
+  { href: "#", label: "تلگرام", icon: "MessageCircle" },
+  { href: "#", label: "گیت‌هاب", icon: "Code2" },
+] as const;
+
+// ─── Hero — Countdown time-unit labels ──────────────────────────────────────
+export const TIME_UNIT_LABELS = {
+  days: "روز",
+  hours: "ساعت",
+  minutes: "دقیقه",
+  seconds: "ثانیه",
+} as const;
+
+export const SCROLL_INDICATOR_TEXT = "برای ادامه اسکرول کنید";
+
+// ─── Stats Section ───────────────────────────────────────────────────────────
+export const STATS_SECTION_ARIA = "آمار مسابقه";
+
+// ─── What is ICPC — extra strings ───────────────────────────────────────────
+export const ICPC_HIGHLIGHTS_ARIA = "درباره ICPC";
+export const ICPC_PIPELINE_ARIA = "مسیر مسابقات ICPC";
+export const ICPC_PIPELINE_HEADER = "// مسیر پیشرفت";
+export const ICPC_PIPELINE_YOU_HERE = "شما اینجا هستید";
+export const ICPC_PIPELINE_NOTE =
+  "تیم‌های برتر هر مرحله می‌توانند به مرحله بعد راه پیدا کنند";
+
+// ─── Contest Format Section ──────────────────────────────────────────────────
+export const FORMAT_SECTION_EYEBROW = "ساختار مسابقه";
+export const FORMAT_SECTION_TITLE_PREFIX = "حس و حال مسابقات";
+export const FORMAT_SECTION_TITLE_ACCENT = "ICPC بین المللی";
+export const FORMAT_SECTION_SUBTITLE =
+  "BCPC با الهام از فرمت مسابقات بین‌المللی ICPC برگزار می‌شود تا تجربه‌ای واقعی از یک رقابت برنامه‌نویسی تیمی را در دانشگاه بیرجند تجربه کنید.";
+
+export const FORMAT_SECTION_NOTE =
+  "مسابقه BCPC زیر نظر انجمن علمی دانشجویی دانشگاه بیرجند و بر اساس استانداردهای مسابقات ICPC برگزار می‌شود";
+
+// ─── Highlights Section ──────────────────────────────────────────────────────
+export const HIGHLIGHTS_SECTION_EYEBROW = "چرا BCPC؟";
+export const HIGHLIGHTS_SECTION_TITLE = "چرا باید در BCPC شرکت کنید؟";
+export const HIGHLIGHTS_SECTION_SUBTITLE =
+  "اینجا فقط قرار نیست کد بزنید؛ قرار است رقابت کنید، مسئله حل کنید و تجربه‌ای متفاوت از برنامه‌نویسی تیمی داشته باشید.";
+
+export const HIGHLIGHTS_SECTION_LINK = "آشنایی بیشتر با مسابقه";
+
+// ─── Timeline Section ────────────────────────────────────────────────────────
+export const TIMELINE_SECTION_OL_ARIA = "مراحل برگزاری مسابقه";
+
+// ─── Header / Navigation ─────────────────────────────────────────────────────
+export const HEADER_LOGO_LETTER = "B";
+export const HEADER_LOGO_ARIA = `${SITE_SHORT_NAME} — صفحه اصلی`;
+export const NAV_DESKTOP_ARIA = "ناوبری اصلی";
+export const NAV_MOBILE_ARIA = "منوی موبایل";
+export const MOBILE_MENU_OPEN_ARIA = "باز کردن منو";
+export const MOBILE_MENU_CLOSE_ARIA = "بستن منو";
+
+// ─── Prizes Section ──────────────────────────────────────────────────────────
+export const PRIZES_SECTION_EYEBROW = "جوایز مسابقه";
+export const PRIZES_SECTION_TITLE = "برای بهترین‌ها";
+export const PRIZES_SECTION_SUBTITLE =
+  "تیم‌های برتر علاوه بر دریافت جوایز نقدی و لوح تقدیر، فرصت ادامه مسیر در مراحل بالاتر مسابقات ICPC را هم خواهند داشت.";
+
+export const PRIZES_RANK_LABEL = "مقام";
+export const PRIZES_ARIA = "جوایز مسابقه";
+
+// ─── FAQ Section ─────────────────────────────────────────────────────────────
+export const FAQ_SECTION_EYEBROW = "سؤالات متداول";
+export const FAQ_SECTION_TITLE = "سؤالات شما";
+export const FAQ_SECTION_SUBTITLE =
+  "پاسخ سؤال‌تان را پیدا نکردید؟ از طریق صفحه تماس با ما با تیم برگزارکننده در ارتباط باشید.";
+
+export const FAQ_OPEN_ARIA = "نمایش پاسخ";
+export const FAQ_CLOSE_ARIA = "بستن پاسخ";
+export const FAQ_CONTACT_LINK = "/contact";
+export const FAQ_CONTACT_TEXT = "تماس با ما";
+export const FAQ_BOTTOM_NOTE = "آماده رقابتید؟ جای شما بین تیم‌ها خالی است.";
+</file>
+
+<file path="src/styles/global.css">
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(0.9892 0.0053 286.3028);
+  --foreground: oklch(0.2257 0.0194 280.2492);
+  --card: oklch(0.9892 0.0053 286.3028);
+  --card-foreground: oklch(0.2257 0.0194 280.2492);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2257 0.0194 280.2492);
+  --primary: oklch(0.6217 0.1799 287.7754);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.957 0.0187 289.3286);
+  --secondary-foreground: oklch(0.3569 0.0813 288.2584);
+  --muted: oklch(0.9601 0.0093 286.2229);
+  --muted-foreground: oklch(0.51 0.0425 284.7922);
+  --accent: oklch(0.957 0.0187 289.3286);
+  --accent-foreground: oklch(0.4619 0.2173 279.9839);
+  --destructive: oklch(0.643 0.1925 24.3201);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9175 0.0216 285.9662);
+  --input: oklch(0.866 0.0371 285.5991);
+  --ring: oklch(0.6217 0.1799 287.7754);
+  --chart-1: oklch(0.6217 0.1799 287.7754);
+  --chart-2: oklch(0.7716 0.1036 291.3083);
+  --chart-3: oklch(0.3569 0.0813 288.2584);
+  --chart-4: oklch(0.874 0.0537 291.1256);
+  --chart-5: oklch(0.5413 0.1805 285.7967);
+  --sidebar: oklch(0.9811 0.0093 286.2277);
+  --sidebar-foreground: oklch(0.3755 0.0323 284.7377);
+  --sidebar-primary: oklch(0.6217 0.1799 287.7754);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.957 0.0187 289.3286);
+  --sidebar-accent-foreground: oklch(0.4619 0.2173 279.9839);
+  --sidebar-border: oklch(0.943 0.0134 286.1402);
+  --sidebar-ring: oklch(0.6217 0.1799 287.7754);
+  --font-sans: "Vazirmatn", "Geist Variable", sans-serif;
+  --font-serif: Merriweather, serif;
+  --font-mono: JetBrains Mono, monospace;
+  --radius: 0.5rem;
+  --shadow-x: 0px;
+  --shadow-y: 4px;
+  --shadow-blur: 10px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.05;
+  --shadow-color: #000000;
+  --shadow-2xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.03);
+  --shadow-xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.03);
+  --shadow-sm:
+    0px 4px 10px 0px hsl(0 0% 0% / 0.05), 0px 1px 2px -1px hsl(0 0% 0% / 0.05);
+  --shadow:
+    0px 4px 10px 0px hsl(0 0% 0% / 0.05), 0px 1px 2px -1px hsl(0 0% 0% / 0.05);
+  --shadow-md:
+    0px 4px 10px 0px hsl(0 0% 0% / 0.05), 0px 2px 4px -1px hsl(0 0% 0% / 0.05);
+  --shadow-lg:
+    0px 4px 10px 0px hsl(0 0% 0% / 0.05), 0px 4px 6px -1px hsl(0 0% 0% / 0.05);
+  --shadow-xl:
+    0px 4px 10px 0px hsl(0 0% 0% / 0.05), 0px 8px 10px -1px hsl(0 0% 0% / 0.05);
+  --shadow-2xl: 0px 4px 10px 0px hsl(0 0% 0% / 0.13);
+  --tracking-normal: -0.01em;
+  --spacing: 0.25rem;
+
+  /* 🫧 Liquid Glass Variables */
+  --glass-blur: 20px;
+  --glass-saturation: 180%;
+  --glass-bg: oklch(100% 0 0 / 0.15);
+  --glass-bg-strong: oklch(100% 0 0 / 0.25);
+  --glass-bg-subtle: oklch(100% 0 0 / 0.08);
+  --glass-border: oklch(100% 0 0 / 0.3);
+  --glass-highlight: oklch(100% 0 0 / 0.5);
+  --glass-shadow-color: oklch(0% 0 0 / 0.15);
+  --glass-inner-glow: oklch(100% 0 0 / 0.1);
+}
+
+.dark {
+  --background: oklch(0.1503 0.0171 289.8934);
+  --foreground: oklch(0.9284 0.0161 286.0812);
+  --card: oklch(0.1503 0.0171 289.8934);
+  --card-foreground: oklch(0.9284 0.0161 286.0812);
+  --popover: oklch(0.1941 0.024 287.7536);
+  --popover-foreground: oklch(0.9284 0.0161 286.0812);
+  --primary: oklch(0.6217 0.1799 287.7754);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.2354 0.0399 287.2762);
+  --secondary-foreground: oklch(0.9284 0.0161 286.0812);
+  --muted: oklch(0.2047 0.0296 286.5224);
+  --muted-foreground: oklch(0.6907 0.0467 285.113);
+  --accent: oklch(0.2739 0.0616 285.5915);
+  --accent-foreground: oklch(0.7716 0.1036 291.3083);
+  --destructive: oklch(0.3997 0.1352 25.8101);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.2587 0.0372 285.7691);
+  --input: oklch(0.3015 0.0518 286.0003);
+  --ring: oklch(0.6217 0.1799 287.7754);
+  --chart-1: oklch(0.6217 0.1799 287.7754);
+  --chart-2: oklch(0.5413 0.1805 285.7967);
+  --chart-3: oklch(0.7716 0.1036 291.3083);
+  --chart-4: oklch(0.3569 0.0813 288.2584);
+  --chart-5: oklch(0.4539 0.1474 285.6505);
+  --sidebar: oklch(0.1616 0.023 287.693);
+  --sidebar-foreground: oklch(0.8147 0.0307 285.6989);
+  --sidebar-primary: oklch(0.6217 0.1799 287.7754);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.2354 0.0399 287.2762);
+  --sidebar-accent-foreground: oklch(0.9284 0.0161 286.0812);
+  --sidebar-border: oklch(0.2587 0.0372 285.7691);
+  --sidebar-ring: oklch(0.6217 0.1799 287.7754);
+  --radius: 0.5rem;
+  --shadow-x: 0px;
+  --shadow-y: 8px;
+  --shadow-blur: 20px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.4;
+  --shadow-color: #000000;
+  --shadow-2xs: 0px 8px 20px 0px hsl(0 0% 0% / 0.2);
+  --shadow-xs: 0px 8px 20px 0px hsl(0 0% 0% / 0.2);
+  --shadow-sm:
+    0px 8px 20px 0px hsl(0 0% 0% / 0.4), 0px 1px 2px -1px hsl(0 0% 0% / 0.4);
+  --shadow:
+    0px 8px 20px 0px hsl(0 0% 0% / 0.4), 0px 1px 2px -1px hsl(0 0% 0% / 0.4);
+  --shadow-md:
+    0px 8px 20px 0px hsl(0 0% 0% / 0.4), 0px 2px 4px -1px hsl(0 0% 0% / 0.4);
+  --shadow-lg:
+    0px 8px 20px 0px hsl(0 0% 0% / 0.4), 0px 4px 6px -1px hsl(0 0% 0% / 0.4);
+  --shadow-xl:
+    0px 8px 20px 0px hsl(0 0% 0% / 0.4), 0px 8px 10px -1px hsl(0 0% 0% / 0.4);
+  --shadow-2xl: 0px 8px 20px 0px hsl(0 0% 0% / 1);
+
+  /* 🫧 Liquid Glass Variables - Dark Mode */
+  --glass-bg: oklch(20% 0.02 280 / 0.3);
+  --glass-bg-strong: oklch(25% 0.03 280 / 0.45);
+  --glass-bg-subtle: oklch(15% 0.01 280 / 0.2);
+  --glass-border: oklch(100% 0 0 / 0.15);
+  --glass-highlight: oklch(100% 0 0 / 0.2);
+  --glass-shadow-color: oklch(0% 0 0 / 0.4);
+  --glass-inner-glow: oklch(100% 0 0 / 0.05);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+
+  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+  --tracking-normal: var(--tracking-normal);
+  --tracking-wide: calc(var(--tracking-normal) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+}
+
+@layer base {
+  html {
+    direction: rtl;
+  }
+
+  /* Hide the native cursor on mouse devices so the custom cursor takes over.
+     Coarse-pointer devices (touch) keep the default cursor. */
+  @media (pointer: fine) {
+    html,
+    html * {
+      cursor: none !important;
+    }
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    letter-spacing: var(--tracking-normal);
+  }
+}
+
+@layer components {
+  /* 🫧 Liquid Glass - Base */
+  .liquid-glass {
+    position: relative;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+    -webkit-backdrop-filter: blur(var(--glass-blur))
+      saturate(var(--glass-saturation));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow:
+      0 8px 32px 0 var(--glass-shadow-color),
+      0 2px 8px 0 oklch(0% 0 0 / 0.08),
+      inset 0 1px 0 0 var(--glass-highlight),
+      inset 0 -1px 0 0 oklch(100% 0 0 / 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* ✨ Specular Highlight */
+  .liquid-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      oklch(100% 0 0 / 0.25) 0%,
+      oklch(100% 0 0 / 0.05) 30%,
+      transparent 60%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* 🌈 Refraction Tint */
+  .liquid-glass::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      ellipse at 50% 0%,
+      oklch(80% 0.1 280 / 0.08) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: overlay;
+  }
+
+  /* 🖱️ Hover Effect */
+  .liquid-glass:hover {
+    background: var(--glass-bg-strong);
+    box-shadow:
+      0 12px 40px 0 var(--glass-shadow-color),
+      0 4px 12px 0 oklch(0% 0 0 / 0.1),
+      inset 0 1px 0 0 var(--glass-highlight),
+      inset 0 -1px 0 0 oklch(100% 0 0 / 0.12);
+    transform: translateY(-1px);
+  }
+
+  /* 👆 Active/Pressed */
+  .liquid-glass:active {
+    transform: translateY(0);
+    background: var(--glass-bg-strong);
+  }
+
+  /* 🪟 Strong Variant */
+  .liquid-glass-strong {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+  }
+
+  /* 💊 Pill Variant */
+  .liquid-glass-pill {
+    border-radius: 9999px;
+    padding: 0.5rem 1.25rem;
+  }
+
+  /* 🎯 Subtle Variant */
+  .liquid-glass-subtle {
+    background: var(--glass-bg-subtle);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+  }
+}
+
+/* 📱 Performance Optimization */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: none;
+  }
+
+  .liquid-glass:hover {
+    transform: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────
+   🎬 Custom Keyframe Animations
+────────────────────────────────────────────────────── */
+
+/* Floating code tokens in hero background */
+@keyframes code-float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.035;
+  }
+  33% {
+    transform: translateY(-18px) rotate(0.5deg);
+    opacity: 0.06;
+  }
+  66% {
+    transform: translateY(-8px) rotate(-0.5deg);
+    opacity: 0.04;
+  }
+}
+
+/* Pulsing glow ring used on active/live badges */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 oklch(0.62 0.18 287 / 0.4),
+      0 0 20px oklch(0.62 0.18 287 / 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 0 6px oklch(0.62 0.18 287 / 0),
+      0 0 40px oklch(0.62 0.18 287 / 0.35);
+  }
+}
+
+/* Diagonal scan-line shimmer — used on hero title */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* ──────────────────────────────────────────────────────
+   🛠️ Animation Utilities
+────────────────────────────────────────────────────── */
+
+.animate-code-float {
+  animation: code-float var(--float-duration, 22s) ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+/* Hero dot-grid pattern — always uses a dark foreground tint */
+.hero-dot-grid {
+  background-image: radial-gradient(
+    circle,
+    oklch(100% 0 0 / 0.12) 1px,
+    transparent 1px
   );
+  background-size: 32px 32px;
+}
+
+/* Reduced motion: disable all custom keyframe animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-code-float,
+  .animate-glow-pulse {
+    animation: none;
+  }
 }
 </file>
 
@@ -5157,428 +5660,14 @@ import { CustomCursor } from "@/components/animations/CustomCursor";
         <ContestFormatSection client:visible />
         <HighlightsSection client:visible />
         <TimelineSection client:visible />
-        <PrizesSection client:visible />
+        <!-- <PrizesSection client:visible /> -->
         <FAQSection client:visible />
-        <SponsorsSection client:visible />
+        <!-- <SponsorsSection client:visible /> -->
     </main>
 
     <!-- Footer sits outside <main> — semantic landmark for screen readers -->
     <Footer client:visible />
 </Layout>
-</file>
-
-<file path="src/styles/global.css">
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
-
-@custom-variant dark (&:is(.dark *));
-
-:root {
-    --background: oklch(0.9892 0.0053 286.3028);
-    --foreground: oklch(0.2257 0.0194 280.2492);
-    --card: oklch(0.9892 0.0053 286.3028);
-    --card-foreground: oklch(0.2257 0.0194 280.2492);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.2257 0.0194 280.2492);
-    --primary: oklch(0.6217 0.1799 287.7754);
-    --primary-foreground: oklch(1 0 0);
-    --secondary: oklch(0.957 0.0187 289.3286);
-    --secondary-foreground: oklch(0.3569 0.0813 288.2584);
-    --muted: oklch(0.9601 0.0093 286.2229);
-    --muted-foreground: oklch(0.51 0.0425 284.7922);
-    --accent: oklch(0.957 0.0187 289.3286);
-    --accent-foreground: oklch(0.4619 0.2173 279.9839);
-    --destructive: oklch(0.643 0.1925 24.3201);
-    --destructive-foreground: oklch(1 0 0);
-    --border: oklch(0.9175 0.0216 285.9662);
-    --input: oklch(0.866 0.0371 285.5991);
-    --ring: oklch(0.6217 0.1799 287.7754);
-    --chart-1: oklch(0.6217 0.1799 287.7754);
-    --chart-2: oklch(0.7716 0.1036 291.3083);
-    --chart-3: oklch(0.3569 0.0813 288.2584);
-    --chart-4: oklch(0.874 0.0537 291.1256);
-    --chart-5: oklch(0.5413 0.1805 285.7967);
-    --sidebar: oklch(0.9811 0.0093 286.2277);
-    --sidebar-foreground: oklch(0.3755 0.0323 284.7377);
-    --sidebar-primary: oklch(0.6217 0.1799 287.7754);
-    --sidebar-primary-foreground: oklch(1 0 0);
-    --sidebar-accent: oklch(0.957 0.0187 289.3286);
-    --sidebar-accent-foreground: oklch(0.4619 0.2173 279.9839);
-    --sidebar-border: oklch(0.943 0.0134 286.1402);
-    --sidebar-ring: oklch(0.6217 0.1799 287.7754);
-    --font-sans: "Vazirmatn", "Geist Variable", sans-serif;
-    --font-serif: Merriweather, serif;
-    --font-mono: JetBrains Mono, monospace;
-    --radius: 0.5rem;
-    --shadow-x: 0px;
-    --shadow-y: 4px;
-    --shadow-blur: 10px;
-    --shadow-spread: 0px;
-    --shadow-opacity: 0.05;
-    --shadow-color: #000000;
-    --shadow-2xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.03);
-    --shadow-xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.03);
-    --shadow-sm:
-        0px 4px 10px 0px hsl(0 0% 0% / 0.05),
-        0px 1px 2px -1px hsl(0 0% 0% / 0.05);
-    --shadow:
-        0px 4px 10px 0px hsl(0 0% 0% / 0.05),
-        0px 1px 2px -1px hsl(0 0% 0% / 0.05);
-    --shadow-md:
-        0px 4px 10px 0px hsl(0 0% 0% / 0.05),
-        0px 2px 4px -1px hsl(0 0% 0% / 0.05);
-    --shadow-lg:
-        0px 4px 10px 0px hsl(0 0% 0% / 0.05),
-        0px 4px 6px -1px hsl(0 0% 0% / 0.05);
-    --shadow-xl:
-        0px 4px 10px 0px hsl(0 0% 0% / 0.05),
-        0px 8px 10px -1px hsl(0 0% 0% / 0.05);
-    --shadow-2xl: 0px 4px 10px 0px hsl(0 0% 0% / 0.13);
-    --tracking-normal: -0.01em;
-    --spacing: 0.25rem;
-
-    /* 🫧 Liquid Glass Variables */
-    --glass-blur: 20px;
-    --glass-saturation: 180%;
-    --glass-bg: oklch(100% 0 0 / 0.15);
-    --glass-bg-strong: oklch(100% 0 0 / 0.25);
-    --glass-bg-subtle: oklch(100% 0 0 / 0.08);
-    --glass-border: oklch(100% 0 0 / 0.3);
-    --glass-highlight: oklch(100% 0 0 / 0.5);
-    --glass-shadow-color: oklch(0% 0 0 / 0.15);
-    --glass-inner-glow: oklch(100% 0 0 / 0.1);
-}
-
-.dark {
-    --background: oklch(0.1503 0.0171 289.8934);
-    --foreground: oklch(0.9284 0.0161 286.0812);
-    --card: oklch(0.1503 0.0171 289.8934);
-    --card-foreground: oklch(0.9284 0.0161 286.0812);
-    --popover: oklch(0.1941 0.024 287.7536);
-    --popover-foreground: oklch(0.9284 0.0161 286.0812);
-    --primary: oklch(0.6217 0.1799 287.7754);
-    --primary-foreground: oklch(1 0 0);
-    --secondary: oklch(0.2354 0.0399 287.2762);
-    --secondary-foreground: oklch(0.9284 0.0161 286.0812);
-    --muted: oklch(0.2047 0.0296 286.5224);
-    --muted-foreground: oklch(0.6907 0.0467 285.113);
-    --accent: oklch(0.2739 0.0616 285.5915);
-    --accent-foreground: oklch(0.7716 0.1036 291.3083);
-    --destructive: oklch(0.3997 0.1352 25.8101);
-    --destructive-foreground: oklch(1 0 0);
-    --border: oklch(0.2587 0.0372 285.7691);
-    --input: oklch(0.3015 0.0518 286.0003);
-    --ring: oklch(0.6217 0.1799 287.7754);
-    --chart-1: oklch(0.6217 0.1799 287.7754);
-    --chart-2: oklch(0.5413 0.1805 285.7967);
-    --chart-3: oklch(0.7716 0.1036 291.3083);
-    --chart-4: oklch(0.3569 0.0813 288.2584);
-    --chart-5: oklch(0.4539 0.1474 285.6505);
-    --sidebar: oklch(0.1616 0.023 287.693);
-    --sidebar-foreground: oklch(0.8147 0.0307 285.6989);
-    --sidebar-primary: oklch(0.6217 0.1799 287.7754);
-    --sidebar-primary-foreground: oklch(1 0 0);
-    --sidebar-accent: oklch(0.2354 0.0399 287.2762);
-    --sidebar-accent-foreground: oklch(0.9284 0.0161 286.0812);
-    --sidebar-border: oklch(0.2587 0.0372 285.7691);
-    --sidebar-ring: oklch(0.6217 0.1799 287.7754);
-    --radius: 0.5rem;
-    --shadow-x: 0px;
-    --shadow-y: 8px;
-    --shadow-blur: 20px;
-    --shadow-spread: 0px;
-    --shadow-opacity: 0.4;
-    --shadow-color: #000000;
-    --shadow-2xs: 0px 8px 20px 0px hsl(0 0% 0% / 0.2);
-    --shadow-xs: 0px 8px 20px 0px hsl(0 0% 0% / 0.2);
-    --shadow-sm:
-        0px 8px 20px 0px hsl(0 0% 0% / 0.4), 0px 1px 2px -1px hsl(0 0% 0% / 0.4);
-    --shadow:
-        0px 8px 20px 0px hsl(0 0% 0% / 0.4), 0px 1px 2px -1px hsl(0 0% 0% / 0.4);
-    --shadow-md:
-        0px 8px 20px 0px hsl(0 0% 0% / 0.4), 0px 2px 4px -1px hsl(0 0% 0% / 0.4);
-    --shadow-lg:
-        0px 8px 20px 0px hsl(0 0% 0% / 0.4), 0px 4px 6px -1px hsl(0 0% 0% / 0.4);
-    --shadow-xl:
-        0px 8px 20px 0px hsl(0 0% 0% / 0.4),
-        0px 8px 10px -1px hsl(0 0% 0% / 0.4);
-    --shadow-2xl: 0px 8px 20px 0px hsl(0 0% 0% / 1);
-
-    /* 🫧 Liquid Glass Variables - Dark Mode */
-    --glass-bg: oklch(20% 0.02 280 / 0.3);
-    --glass-bg-strong: oklch(25% 0.03 280 / 0.45);
-    --glass-bg-subtle: oklch(15% 0.01 280 / 0.2);
-    --glass-border: oklch(100% 0 0 / 0.15);
-    --glass-highlight: oklch(100% 0 0 / 0.2);
-    --glass-shadow-color: oklch(0% 0 0 / 0.4);
-    --glass-inner-glow: oklch(100% 0 0 / 0.05);
-}
-
-@theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
-    --color-popover: var(--popover);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-secondary: var(--secondary);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-accent: var(--accent);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-destructive: var(--destructive);
-    --color-destructive-foreground: var(--destructive-foreground);
-    --color-border: var(--border);
-    --color-input: var(--input);
-    --color-ring: var(--ring);
-    --color-chart-1: var(--chart-1);
-    --color-chart-2: var(--chart-2);
-    --color-chart-3: var(--chart-3);
-    --color-chart-4: var(--chart-4);
-    --color-chart-5: var(--chart-5);
-    --color-sidebar: var(--sidebar);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-ring: var(--sidebar-ring);
-
-    --font-sans: var(--font-sans);
-    --font-mono: var(--font-mono);
-    --font-serif: var(--font-serif);
-
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
-
-    --shadow-2xs: var(--shadow-2xs);
-    --shadow-xs: var(--shadow-xs);
-    --shadow-sm: var(--shadow-sm);
-    --shadow: var(--shadow);
-    --shadow-md: var(--shadow-md);
-    --shadow-lg: var(--shadow-lg);
-    --shadow-xl: var(--shadow-xl);
-    --shadow-2xl: var(--shadow-2xl);
-
-    --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
-    --tracking-tight: calc(var(--tracking-normal) - 0.025em);
-    --tracking-normal: var(--tracking-normal);
-    --tracking-wide: calc(var(--tracking-normal) + 0.025em);
-    --tracking-wider: calc(var(--tracking-normal) + 0.05em);
-    --tracking-widest: calc(var(--tracking-normal) + 0.1em);
-}
-
-@layer base {
-    html {
-        direction: rtl;
-    }
-
-    /* Hide the native cursor on mouse devices so the custom cursor takes over.
-     Coarse-pointer devices (touch) keep the default cursor. */
-    @media (pointer: fine) {
-        html,
-        html * {
-            cursor: none !important;
-        }
-    }
-
-    * {
-        @apply border-border outline-ring/50;
-    }
-
-    body {
-        @apply bg-background text-foreground;
-        letter-spacing: var(--tracking-normal);
-    }
-}
-
-@layer components {
-    /* 🫧 Liquid Glass - Base */
-    .liquid-glass {
-        position: relative;
-        background: var(--glass-bg);
-        backdrop-filter: blur(var(--glass-blur))
-            saturate(var(--glass-saturation));
-        -webkit-backdrop-filter: blur(var(--glass-blur))
-            saturate(var(--glass-saturation));
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-lg);
-        box-shadow:
-            0 8px 32px 0 var(--glass-shadow-color),
-            0 2px 8px 0 oklch(0% 0 0 / 0.08),
-            inset 0 1px 0 0 var(--glass-highlight),
-            inset 0 -1px 0 0 oklch(100% 0 0 / 0.1);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
-        isolation: isolate;
-    }
-
-    /* ✨ Specular Highlight */
-    .liquid-glass::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        background: linear-gradient(
-            135deg,
-            oklch(100% 0 0 / 0.25) 0%,
-            oklch(100% 0 0 / 0.05) 30%,
-            transparent 60%
-        );
-        pointer-events: none;
-        z-index: 1;
-    }
-
-    /* 🌈 Refraction Tint */
-    .liquid-glass::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        background: radial-gradient(
-            ellipse at 50% 0%,
-            oklch(80% 0.1 280 / 0.08) 0%,
-            transparent 70%
-        );
-        pointer-events: none;
-        z-index: 1;
-        mix-blend-mode: overlay;
-    }
-
-    /* 🖱️ Hover Effect */
-    .liquid-glass:hover {
-        background: var(--glass-bg-strong);
-        box-shadow:
-            0 12px 40px 0 var(--glass-shadow-color),
-            0 4px 12px 0 oklch(0% 0 0 / 0.1),
-            inset 0 1px 0 0 var(--glass-highlight),
-            inset 0 -1px 0 0 oklch(100% 0 0 / 0.12);
-        transform: translateY(-1px);
-    }
-
-    /* 👆 Active/Pressed */
-    .liquid-glass:active {
-        transform: translateY(0);
-        background: var(--glass-bg-strong);
-    }
-
-    /* 🪟 Strong Variant */
-    .liquid-glass-strong {
-        background: var(--glass-bg-strong);
-        backdrop-filter: blur(30px) saturate(200%);
-        -webkit-backdrop-filter: blur(30px) saturate(200%);
-    }
-
-    /* 💊 Pill Variant */
-    .liquid-glass-pill {
-        border-radius: 9999px;
-        padding: 0.5rem 1.25rem;
-    }
-
-    /* 🎯 Subtle Variant */
-    .liquid-glass-subtle {
-        background: var(--glass-bg-subtle);
-        backdrop-filter: blur(12px) saturate(150%);
-        -webkit-backdrop-filter: blur(12px) saturate(150%);
-    }
-}
-
-/* 📱 Performance Optimization */
-@media (prefers-reduced-motion: reduce) {
-    .liquid-glass {
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        transition: none;
-    }
-
-    .liquid-glass:hover {
-        transform: none;
-    }
-}
-
-/* ──────────────────────────────────────────────────────
-   🎬 Custom Keyframe Animations
-────────────────────────────────────────────────────── */
-
-/* Floating code tokens in hero background */
-@keyframes code-float {
-    0%,
-    100% {
-        transform: translateY(0px) rotate(0deg);
-        opacity: 0.035;
-    }
-    33% {
-        transform: translateY(-18px) rotate(0.5deg);
-        opacity: 0.06;
-    }
-    66% {
-        transform: translateY(-8px) rotate(-0.5deg);
-        opacity: 0.04;
-    }
-}
-
-/* Pulsing glow ring used on active/live badges */
-@keyframes glow-pulse {
-    0%,
-    100% {
-        box-shadow:
-            0 0 0 0 oklch(0.62 0.18 287 / 0.4),
-            0 0 20px oklch(0.62 0.18 287 / 0.2);
-    }
-    50% {
-        box-shadow:
-            0 0 0 6px oklch(0.62 0.18 287 / 0),
-            0 0 40px oklch(0.62 0.18 287 / 0.35);
-    }
-}
-
-/* Diagonal scan-line shimmer — used on hero title */
-@keyframes shimmer {
-    0% {
-        background-position: -200% center;
-    }
-    100% {
-        background-position: 200% center;
-    }
-}
-
-/* ──────────────────────────────────────────────────────
-   🛠️ Animation Utilities
-────────────────────────────────────────────────────── */
-
-.animate-code-float {
-    animation: code-float var(--float-duration, 22s) ease-in-out infinite;
-}
-
-.animate-glow-pulse {
-    animation: glow-pulse 2.5s ease-in-out infinite;
-}
-
-/* Hero dot-grid pattern — always uses a dark foreground tint */
-.hero-dot-grid {
-    background-image: radial-gradient(
-        circle,
-        oklch(100% 0 0 / 0.12) 1px,
-        transparent 1px
-    );
-    background-size: 32px 32px;
-}
-
-/* Reduced motion: disable all custom keyframe animations */
-@media (prefers-reduced-motion: reduce) {
-    .animate-code-float,
-    .animate-glow-pulse {
-        animation: none;
-    }
-}
 </file>
 
 <file path="src/layouts/Layout.astro">
@@ -5594,7 +5683,7 @@ import "../styles/global.css";
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico" />
         <meta name="generator" content={Astro.generator} />
-        <title>مسابقه برنامه‌نویسی بیرجند (BCPC)</title>
+        <title>BCPC</title>
         <link
             href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css"
             rel="stylesheet"

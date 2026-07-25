@@ -166,7 +166,7 @@ export function HeroSection() {
                   <p className="text-center text-[10px] text-white/35 mb-3 md:mb-4 tracking-widest uppercase">
                     {COUNTDOWN_LABEL}
                   </p>
-                  <div className="grid grid-cols-4 gap-2 md:gap-3">
+                  <div dir="ltr" className="grid grid-cols-4 gap-2 md:gap-3">
                     {timeUnits.map((unit, i) => (
                       <CountdownUnit key={unit.label} unit={unit} index={i} />
                     ))}
@@ -186,7 +186,7 @@ export function HeroSection() {
         className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-1.5"
         aria-hidden="true"
       >
-        <span className="font-mono text-[9px] text-white/20 tracking-widest uppercase">
+        <span className="text-[9px] text-white/20 tracking-widest uppercase">
           {SCROLL_INDICATOR_TEXT}
         </span>
         <motion.div
